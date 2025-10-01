@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aurora Passkey Test</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a1f2e 0%, #1a3a4a 100%);
+      color: #e0f4f3;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 32px;
+      backdrop-filter: blur(10px);
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+      color: #0ac7bd;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #9ec1be;
+      margin-bottom: 24px;
+    }
+    .section {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #0ac7bd;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #0dc7bd, #0aa2a7);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 12px;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(10, 199, 189, 0.3);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    button.secondary {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .output {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #0ac7bd;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 12px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .success { color: #10db9f; }
+    .error { color: #ff6b6b; }
+    .info { color: #0ac7bd; }
+    .status {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .status.success {
+      background: rgba(16, 219, 159, 0.2);
+      border: 1px solid rgba(16, 219, 159, 0.3);
+      color: #10db9f;
+    }
+    .status.error {
+      background: rgba(255, 107, 107, 0.2);
+      border: 1px solid rgba(255, 107, 107, 0.3);
+      color: #ff6b6b;
+    }
+    .status.info {
+      background: rgba(10, 199, 189, 0.2);
+      border: 1px solid rgba(10, 199, 189, 0.3);
+      color: #0ac7bd;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 Aurora Passkey Test</h1>
+    <div class="subtitle">Test WebAuthn/Passkey with Windows Hello</div>
+    
+    <div id="status" class="status info">
+      ✅ Page loaded - Ready to test
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Step 1: Create Passkey</div>
+      <button id="btn-create" onclick="testCreatePasskey()">
+        🔐 Create Passkey with Windows Hello
+      </button>
+      <div class="output" id="output-create" style="display: none;"></div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Step 2: Sign Message</div>
+      <button id="btn-sign" onclick="testSignMessage()" disabled>
+        ✍️ Sign Test Message
+      </button>
+      <div class="output" id="output-sign" style="display: none;"></div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Step 3: Check Info</div>
+      <button class="secondary" onclick="showStoredInfo()">
+        📋 Show Stored Passkey Info
+      </button>
+      <div class="output" id="output-info" style="display: none;"></div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Cleanup</div>
+      <button class="secondary" onclick="clearPasskey()">
+        🗑️ Clear Passkey Data
+      </button>
+    </div>
+  </div>
+
+  <script>
+    console.log('✅ Script loaded');
+    
+    // Helper functions for encoding
+    function arrayBufferToBase64(buffer) {
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return btoa(binary);
+    }
+    
+    function base64ToArrayBuffer(base64) {
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      return bytes.buffer;
+    }
+    
+    function arrayBufferToHex(buffer) {
+      return Array.from(new Uint8Array(buffer))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+    }
+    
+    // Create Passkey function
+    async function createPasskey() {
+      console.log('🔐 Creating passkey...');
+      
+      // Check if WebAuthn is supported
+      if (!window.PublicKeyCredential) {
+        throw new Error('Passkeys are not supported in this browser');
+      }
+      
+      // Generate challenge
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+      const userId = crypto.getRandomValues(new Uint8Array(16));
+      
+      // Create credential options
+      const publicKeyCredentialCreationOptions = {
+        challenge: challenge,
+        rp: {
+          name: "Aurora Portal",
+          id: window.location.hostname
+        },
+        user: {
+          id: userId,
+          name: "aurora-user@" + window.location.hostname,
+          displayName: "Aurora Portal User"
+        },
+        pubKeyCredParams: [
+          { alg: -7, type: "public-key" },  // ES256 (ECDSA P-256)
+          { alg: -257, type: "public-key" } // RS256 (RSA)
+        ],
+        authenticatorSelection: {
+          authenticatorAttachment: "platform",
+          userVerification: "required",
+          residentKey: "preferred"
+        },
+        timeout: 60000,
+        attestation: "none"
+      };
+      
+      console.log('📱 Requesting passkey creation...');
+      
+      // Create the credential
+      const credential = await navigator.credentials.create({
+        publicKey: publicKeyCredentialCreationOptions
+      });
+      
+      if (!credential) {
+        throw new Error('Passkey creation was cancelled');
+      }
+      
+      console.log('✅ Passkey created!');
+      
+      // Store credential info
+      const passkeyInfo = {
+        credentialId: arrayBufferToBase64(credential.rawId),
+        userId: arrayBufferToBase64(userId),
+        createdAt: new Date().toISOString(),
+        type: 'passkey'
+      };
+      
+      localStorage.setItem('aurora_passkey_info', JSON.stringify(passkeyInfo));
+      
+      // Generate DID
+      const credIdHash = await crypto.subtle.digest('SHA-256', credential.rawId);
+      const did = 'did:aurora:passkey:' + arrayBufferToHex(credIdHash).substring(0, 40);
+      
+      return {
+        credential,
+        did,
+        credentialId: passkeyInfo.credentialId
+      };
+    }
+    
+    // Sign with Passkey
+    async function signWithPasskey(message) {
+      console.log('🔐 Signing...');
+      
+      const passkeyInfoStr = localStorage.getItem('aurora_passkey_info');
+      if (!passkeyInfoStr) {
+        throw new Error('No passkey found');
+      }
+      
+      const passkeyInfo = JSON.parse(passkeyInfoStr);
+      const credentialId = base64ToArrayBuffer(passkeyInfo.credentialId);
+      
+      const encoder = new TextEncoder();
+      const messageData = encoder.encode(message);
+      const challenge = await crypto.subtle.digest('SHA-256', messageData);
+      
+      const publicKeyCredentialRequestOptions = {
+        challenge: challenge,
+        allowCredentials: [{
+          id: credentialId,
+          type: 'public-key',
+          transports: ['internal']
+        }],
+        timeout: 60000,
+        userVerification: 'required'
+      };
+      
+      const assertion = await navigator.credentials.get({
+        publicKey: publicKeyCredentialRequestOptions
+      });
+      
+      if (!assertion) {
+        throw new Error('Signing cancelled');
+      }
+      
+      const signature = new Uint8Array(assertion.response.signature);
+      return arrayBufferToHex(signature);
+    }
+    
+    // Test functions
+    async function testCreatePasskey() {
+      const btn = document.getElementById('btn-create');
+      const output = document.getElementById('output-create');
+      const status = document.getElementById('status');
+      const btnSign = document.getElementById('btn-sign');
+      
+      try {
+        btn.disabled = true;
+        btn.textContent = '⏳ Creating...';
+        output.style.display = 'block';
+        output.innerHTML = '<span class="info">🔄 Requesting Windows Hello...</span>';
+        
+        status.className = 'status info';
+        status.textContent = '🔐 Authenticate with Windows Hello';
+        
+        const result = await createPasskey();
+        
+        output.innerHTML = '<span class="success">✅ Passkey created!</span>\n\n' +
+          '<strong>DID:</strong>\n' + result.did + '\n\n' +
+          '<strong>Credential ID:</strong>\n' + result.credentialId + '\n\n' +
+          '<span class="info">Stored in Windows Credential Manager</span>';
+        
+        status.className = 'status success';
+        status.textContent = '✅ Passkey created successfully!';
+        
+        btnSign.disabled = false;
+        btn.textContent = '✅ Passkey Created';
+        
+      } catch (error) {
+        output.innerHTML = '<span class="error">❌ Error:</span>\n\n' + error.message + '\n\n' +
+          '<strong>Possible reasons:</strong>\n' +
+          '• Windows Hello not set up\n' +
+          '• User cancelled\n' +
+          '• Browser not supported';
+        
+        status.className = 'status error';
+        status.textContent = '❌ Failed: ' + error.message;
+        
+        btn.disabled = false;
+        btn.textContent = '🔐 Create Passkey';
+      }
+    }
+    
+    async function testSignMessage() {
+      const btn = document.getElementById('btn-sign');
+      const output = document.getElementById('output-sign');
+      const status = document.getElementById('status');
+      
+      try {
+        btn.disabled = true;
+        btn.textContent = '⏳ Signing...';
+        output.style.display = 'block';
+        output.innerHTML = '<span class="info">🔄 Requesting authentication...</span>';
+        
+        status.className = 'status info';
+        status.textContent = '✍️ Authenticate to sign';
+        
+        const message = 'Test from Aurora at ' + new Date().toISOString();
+        const signature = await signWithPasskey(message);
+        
+        output.innerHTML = '<span class="success">✅ Signed!</span>\n\n' +
+          '<strong>Message:</strong>\n' + message + '\n\n' +
+          '<strong>Signature:</strong>\n' + signature + '\n\n' +
+          '<strong>Length:</strong> ' + (signature.length / 2) + ' bytes';
+        
+        status.className = 'status success';
+        status.textContent = '✅ Message signed!';
+        
+        btn.disabled = false;
+        btn.textContent = '✍️ Sign Test Message';
+        
+      } catch (error) {
+        output.innerHTML = '<span class="error">❌ Error:</span>\n\n' + error.message;
+        
+        status.className = 'status error';
+        status.textContent = '❌ Failed: ' + error.message;
+        
+        btn.disabled = false;
+        btn.textContent = '✍️ Sign Test Message';
+      }
+    }
+    
+    function showStoredInfo() {
+      const output = document.getElementById('output-info');
+      output.style.display = 'block';
+      
+      const passkeyInfo = localStorage.getItem('aurora_passkey_info');
+      
+      if (passkeyInfo) {
+        output.innerHTML = '<span class="success">✅ Found in localStorage:</span>\n\n' +
+          JSON.stringify(JSON.parse(passkeyInfo), null, 2);
+      } else {
+        output.innerHTML = '<span class="info">ℹ️ No passkey found</span>';
+      }
+    }
+    
+    function clearPasskey() {
+      if (confirm('Clear passkey data?')) {
+        localStorage.removeItem('aurora_passkey_info');
+        document.getElementById('btn-sign').disabled = true;
+        document.getElementById('status').className = 'status info';
+        document.getElementById('status').textContent = 'Cleared. Create new passkey.';
+        alert('✅ Cleared');
+      }
+    }
+    
+    // Check on load
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('✅ DOM loaded');
+      
+      const passkeyInfo = localStorage.getItem('aurora_passkey_info');
+      if (passkeyInfo) {
+        document.getElementById('btn-sign').disabled = false;
+        document.getElementById('status').className = 'status success';
+        document.getElementById('status').textContent = '✅ Passkey exists - ready to sign';
+        document.getElementById('btn-create').textContent = '✅ Passkey Already Created';
+      }
+      
+      if (!window.PublicKeyCredential) {
+        document.getElementById('status').className = 'status error';
+        document.getElementById('status').textContent = '❌ WebAuthn not supported';
+        document.getElementById('btn-create').disabled = true;
+      }
+    });
+  </script>
+</body>
+</html>
