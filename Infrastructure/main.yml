@@ -1,0 +1,274 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  Plantilla CloudFormation para crear un S3 Bucket destinado a hostear código.
+  Incluye encriptación en reposo (SSE-S3), versionado, bloqueo de acceso público,
+  política que fuerza HTTPS, y outputs útiles.
+
+Metadata:
+  Author: Aurora-Program
+  Purpose: Bucket para hostear artefactos/código
+
+Parameters:
+  BucketName:
+    Type: String
+    Default: ''
+    Description: >-
+      Nombre opcional del bucket. Si se deja vacío CloudFormation creará un
+      nombre único.
+  CloudFrontOriginAccessIdentity:
+    Type: String
+    Default: ''
+    Description: >-
+      (Opcional) Canonical User ID de una CloudFront Origin Access Identity (OAI)
+      o el principal necesario para Origin Access Control. Si se proporciona,
+      la política del bucket permitirá lectura desde esa identidad.
+
+Conditions:
+  HasBucketName: !Not [!Equals [!Ref BucketName, '']]
+  HasOAI: !Not [!Equals [!Ref CloudFrontOriginAccessIdentity, '']]
+
+Resources:
+  CodeBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !If [HasBucketName, !Ref BucketName, !Ref AWS::NoValue]
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+          - Id: AbortIncompleteMultipartUpload
+            Status: Enabled
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Tags:
+      - Key: Name
+        Value: CodeBucket
+
+  CodeBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref CodeBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement: !If
+          - HasOAI
+          - - Sid: DenyUnEncryptedTransport
+              Effect: Deny
+              Principal: '*'
+              Action: 's3:*'
+              Resource:
+                - !GetAtt CodeBucket.Arn
+                - !Sub '${CodeBucket.Arn}/*'
+              Condition:
+                Bool:
+                  aws:SecureTransport: 'false'
+            - Sid: AllowCloudFrontRead
+              Effect: Allow
+              Principal:
+                CanonicalUser: !Ref CloudFrontOriginAccessIdentity
+              Action: 's3:GetObject'
+              Resource: !Sub '${CodeBucket.Arn}/*'
+          - - Sid: DenyUnEncryptedTransport
+              Effect: Deny
+              Principal: '*'
+              Action: 's3:*'
+              Resource:
+                - !GetAtt CodeBucket.Arn
+                - !Sub '${CodeBucket.Arn}/*'
+              Condition:
+                Bool:
+                  aws:SecureTransport: 'false'
+
+Outputs:
+  BucketName:
+    Description: Nombre del bucket S3 creado para hostear código
+    Value: !Ref CodeBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-CodeBucketName'
+
+  BucketArn:
+    Description: ARN del bucket S3
+    Value: !GetAtt CodeBucket.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-CodeBucketArn'
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+	Plantilla CloudFormation para crear un S3 Bucket destinado a hostear código.
+	Incluye encriptación en reposo (SSE-S3), versionado, bloqueo de acceso público,
+	política que fuerza HTTPS, y outputs útiles.
+
+Metadata:
+	Author: Aurora-Program
+	Purpose: Bucket para hostear artefactos/código
+
+Parameters:
+	BucketName:
+		Type: String
+		Default: ''
+		Description: >-
+			Nombre opcional del bucket. Si se deja vacío CloudFormation creará un
+			nombre único.
+	CloudFrontOriginAccessIdentity:
+		Type: String
+		Default: ''
+		Description: >-
+			(Opcional) Canonical User ID o ARN de la identidad de origen de CloudFront
+			(por ejemplo, origin access identity o origin access control). Si se
+			proporciona, la política del bucket permitirá lectura desde esa identidad.
+
+Conditions:
+	HasBucketName: !Not [!Equals [!Ref BucketName, '']]
+		HasOAI: !Not [!Equals [!Ref CloudFrontOriginAccessIdentity, '']]
+
+Resources:
+	CodeBucket:
+		Type: AWS::S3::Bucket
+		Properties:
+			BucketName: !If [HasBucketName, !Ref BucketName, !Ref AWS::NoValue]
+			AccessControl: Private
+			VersioningConfiguration:
+				Status: Enabled
+			PublicAccessBlockConfiguration:
+				BlockPublicAcls: true
+				BlockPublicPolicy: true
+				IgnorePublicAcls: true
+				RestrictPublicBuckets: true
+			BucketEncryption:
+				ServerSideEncryptionConfiguration:
+					- ServerSideEncryptionByDefault:
+							SSEAlgorithm: AES256
+			LifecycleConfiguration:
+				Rules:
+					- Id: AbortIncompleteMultipartUpload
+						Status: Enabled
+						AbortIncompleteMultipartUpload:
+							DaysAfterInitiation: 7
+		DeletionPolicy: Retain
+		UpdateReplacePolicy: Retain
+		Tags:
+			- Key: Name
+				Value: CodeBucket
+
+	CodeBucketPolicy:
+		Type: AWS::S3::BucketPolicy
+		Properties:
+			Bucket: !Ref CodeBucket
+			PolicyDocument:
+				Version: '2012-10-17'
+				Statement:
+					- Sid: DenyUnEncryptedTransport
+						Effect: Deny
+						Principal: '*'
+						Action: 's3:*'
+						Resource:
+							- !GetAtt CodeBucket.Arn
+							AWSTemplateFormatVersion: '2010-09-09'
+							Description: >-
+								Plantilla CloudFormation para crear un S3 Bucket destinado a hostear código.
+								Incluye encriptación en reposo (SSE-S3), versionado, bloqueo de acceso público,
+								política que fuerza HTTPS, y outputs útiles.
+
+							Metadata:
+								Author: Aurora-Program
+								Purpose: Bucket para hostear artefactos/código
+
+							Parameters:
+								BucketName:
+									Type: String
+									Default: ''
+									Description: >-
+										Nombre opcional del bucket. Si se deja vacío CloudFormation creará un
+										nombre único.
+
+							Conditions:
+								HasBucketName: !Not [!Equals [!Ref BucketName, '']]
+
+							Resources:
+								CodeBucket:
+									Type: AWS::S3::Bucket
+									Properties:
+										BucketName: !If [HasBucketName, !Ref BucketName, !Ref AWS::NoValue]
+										AccessControl: Private
+										VersioningConfiguration:
+											Status: Enabled
+										PublicAccessBlockConfiguration:
+											BlockPublicAcls: true
+											BlockPublicPolicy: true
+											IgnorePublicAcls: true
+											RestrictPublicBuckets: true
+										BucketEncryption:
+											ServerSideEncryptionConfiguration:
+												- ServerSideEncryptionByDefault:
+														SSEAlgorithm: AES256
+										LifecycleConfiguration:
+											Rules:
+												- Id: AbortIncompleteMultipartUpload
+													Status: Enabled
+													AbortIncompleteMultipartUpload:
+														DaysAfterInitiation: 7
+									DeletionPolicy: Retain
+									UpdateReplacePolicy: Retain
+									Tags:
+										- Key: Name
+											Value: CodeBucket
+
+								CodeBucketPolicy:
+									Type: AWS::S3::BucketPolicy
+									Properties:
+										Bucket: !Ref CodeBucket
+												PolicyDocument:
+													Version: '2012-10-17'
+													Statement: !If
+														- HasOAI
+														- - Sid: DenyUnEncryptedTransport
+																Effect: Deny
+																Principal: '*'
+																Action: 's3:*'
+																Resource:
+																	- !GetAtt CodeBucket.Arn
+																	- !Sub '${CodeBucket.Arn}/*'
+																Condition:
+																	Bool:
+																		aws:SecureTransport: 'false'
+															- Sid: AllowCloudFrontRead
+																Effect: Allow
+																Principal:
+																	CanonicalUser: !Ref CloudFrontOriginAccessIdentity
+																Action: 's3:GetObject'
+																Resource: !Sub '${CodeBucket.Arn}/*'
+														- - Sid: DenyUnEncryptedTransport
+																Effect: Deny
+																Principal: '*'
+																Action: 's3:*'
+																Resource:
+																	- !GetAtt CodeBucket.Arn
+																	- !Sub '${CodeBucket.Arn}/*'
+																Condition:
+																	Bool:
+																		aws:SecureTransport: 'false'
+
+							Outputs:
+								BucketName:
+									Description: Nombre del bucket S3 creado para hostear código
+									Value: !Ref CodeBucket
+									Export:
+										Name: !Sub '${AWS::StackName}-CodeBucketName'
+
+								BucketArn:
+									Description: ARN del bucket S3
+									Value: !GetAtt CodeBucket.Arn
+									Export:
+										Name: !Sub '${AWS::StackName}-CodeBucketArn'
+
