@@ -10,7 +10,7 @@ import init, {
   get_version, 
   health_check,
   AuroraAgent 
-} from '/wasm-client/pkg/aurora_wasm_client.js?v=2';
+} from '/wasm-client/pkg/aurora_wasm_client.js?v=3';
 
 class AuroraPortal {
   constructor() {
@@ -259,7 +259,7 @@ function displayMessage(role, content) {
             console.log('   Length:', signature.length / 2, 'bytes');
             
             // Verify
-            const { verify_signature } = await import('/wasm-client/pkg/aurora_wasm_client.js?v=2');
+            const { verify_signature } = await import('/wasm-client/pkg/aurora_wasm_client.js?v=3');
             const publicKey = portal.agent.get_public_key();
             const isValid = await verify_signature(publicKey, message, signature);
             
