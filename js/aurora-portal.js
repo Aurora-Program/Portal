@@ -229,14 +229,28 @@ function displayMessage(role, content) {
     const identityPanel = document.getElementById('identity-panel');
     const didFullEl = document.getElementById('did-full');
     const identityTypeEl = document.getElementById('identity-type');
+    const toggleBtn = document.getElementById('btn-toggle-identity');
     
     console.log('Identity panel element:', identityPanel);
     console.log('Portal agent:', portal.agent);
     
+    // Setup toggle button
+    if (toggleBtn) {
+      let isVisible = false;
+      toggleBtn.addEventListener('click', () => {
+        isVisible = !isVisible;
+        if (identityPanel) {
+          identityPanel.style.display = isVisible ? 'block' : 'none';
+        }
+        toggleBtn.textContent = isVisible ? '🔒 Hide Identity Details' : '🔐 Show Identity Details';
+        console.log('Identity panel toggled:', isVisible);
+      });
+    }
+    
     if (identityPanel && portal.agent) {
-      // Show identity panel
-      identityPanel.style.display = 'block';
-      console.log('✅ Identity panel displayed');
+      // Keep panel hidden by default (controlled by toggle button)
+      identityPanel.style.display = 'none';
+      console.log('✅ Identity panel setup (hidden by default)');
       
       // Display full DID
       const did = portal.agent.get_did();
@@ -580,6 +594,212 @@ function displayMessage(role, content) {
   }
 
   /**
+   * WebAuthn/Passkey Support
+   */
+  async function createPasskey() {
+    try {
+      console.log('🔐 Creating passkey...');
+      
+      // Check if WebAuthn is supported
+      if (!window.PublicKeyCredential) {
+        throw new Error('Passkeys are not supported in this browser');
+      }
+      
+      // Generate challenge
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+      const userId = crypto.getRandomValues(new Uint8Array(16));
+      
+      // Create credential options
+      const publicKeyCredentialCreationOptions = {
+        challenge: challenge,
+        rp: {
+          name: "Aurora Portal",
+          id: window.location.hostname
+        },
+        user: {
+          id: userId,
+          name: "aurora-user@" + window.location.hostname,
+          displayName: "Aurora Portal User"
+        },
+        pubKeyCredParams: [
+          { alg: -7, type: "public-key" },  // ES256 (ECDSA P-256)
+          { alg: -257, type: "public-key" } // RS256 (RSA)
+        ],
+        authenticatorSelection: {
+          authenticatorAttachment: "platform", // Use platform authenticator (Windows Hello, Touch ID, etc)
+          userVerification: "required",
+          residentKey: "preferred"
+        },
+        timeout: 60000,
+        attestation: "none"
+      };
+      
+      console.log('📱 Requesting passkey creation (you may see a system prompt)...');
+      
+      // Create the credential
+      const credential = await navigator.credentials.create({
+        publicKey: publicKeyCredentialCreationOptions
+      });
+      
+      if (!credential) {
+        throw new Error('Passkey creation was cancelled');
+      }
+      
+      console.log('✅ Passkey created successfully!');
+      console.log('   Credential ID:', arrayBufferToBase64(credential.rawId));
+      
+      // Store credential info
+      const passkeyInfo = {
+        credentialId: arrayBufferToBase64(credential.rawId),
+        userId: arrayBufferToBase64(userId),
+        createdAt: new Date().toISOString(),
+        type: 'passkey'
+      };
+      
+      localStorage.setItem('aurora_passkey_info', JSON.stringify(passkeyInfo));
+      
+      // Generate DID from credential
+      const credIdHash = await crypto.subtle.digest('SHA-256', credential.rawId);
+      const did = 'did:aurora:passkey:' + arrayBufferToHex(credIdHash).substring(0, 40);
+      
+      console.log('🆔 DID generated:', did);
+      
+      return {
+        credential,
+        did,
+        credentialId: passkeyInfo.credentialId
+      };
+      
+    } catch (error) {
+      console.error('❌ Passkey creation failed:', error);
+      throw error;
+    }
+  }
+  
+  async function signWithPasskey(message) {
+    try {
+      console.log('🔐 Signing with passkey...');
+      
+      // Load stored passkey info
+      const passkeyInfoStr = localStorage.getItem('aurora_passkey_info');
+      if (!passkeyInfoStr) {
+        throw new Error('No passkey found. Please create one first.');
+      }
+      
+      const passkeyInfo = JSON.parse(passkeyInfoStr);
+      const credentialId = base64ToArrayBuffer(passkeyInfo.credentialId);
+      
+      // Create challenge from message
+      const encoder = new TextEncoder();
+      const messageData = encoder.encode(message);
+      const challenge = await crypto.subtle.digest('SHA-256', messageData);
+      
+      // Request assertion (signature)
+      const publicKeyCredentialRequestOptions = {
+        challenge: challenge,
+        allowCredentials: [{
+          id: credentialId,
+          type: 'public-key',
+          transports: ['internal']
+        }],
+        timeout: 60000,
+        userVerification: 'required'
+      };
+      
+      console.log('📱 Requesting signature (you may see a system prompt)...');
+      
+      const assertion = await navigator.credentials.get({
+        publicKey: publicKeyCredentialRequestOptions
+      });
+      
+      if (!assertion) {
+        throw new Error('Signature was cancelled');
+      }
+      
+      console.log('✅ Message signed successfully!');
+      
+      // Extract signature
+      const signature = new Uint8Array(assertion.response.signature);
+      return arrayBufferToHex(signature);
+      
+    } catch (error) {
+      console.error('❌ Passkey signing failed:', error);
+      throw error;
+    }
+  }
+  
+  // Helper functions for encoding
+  function arrayBufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
+  
+  function base64ToArrayBuffer(base64) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes.buffer;
+  }
+  
+  function arrayBufferToHex(buffer) {
+    return Array.from(new Uint8Array(buffer))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  }
+  
+  // Setup identity selector buttons
+  function setupIdentitySelector() {
+    const selector = document.getElementById('identity-selector');
+    const btnUsePasskey = document.getElementById('btn-use-passkey');
+    const btnUseLocalKey = document.getElementById('btn-use-localkey');
+    
+    if (btnUsePasskey) {
+      btnUsePasskey.addEventListener('click', async () => {
+        try {
+          btnUsePasskey.disabled = true;
+          btnUsePasskey.innerHTML = '<div style="font-size: 24px; margin-bottom: 4px;">⏳</div><div>Creating passkey...</div>';
+          
+          const result = await createPasskey();
+          
+          alert(`✅ Passkey created successfully!\n\nDID: ${result.did}\n\nYour identity is now secured by your system's hardware (Windows Hello, Touch ID, etc).`);
+          
+          // Hide selector
+          if (selector) selector.style.display = 'none';
+          
+          // Reload to initialize with passkey
+          window.location.reload();
+          
+        } catch (error) {
+          alert(`❌ Failed to create passkey:\n\n${error.message}\n\nFalling back to browser storage...`);
+          // Fall back to local key
+          if (selector) selector.style.display = 'none';
+        } finally {
+          btnUsePasskey.disabled = false;
+        }
+      });
+    }
+    
+    if (btnUseLocalKey) {
+      btnUseLocalKey.addEventListener('click', () => {
+        console.log('Using browser storage (LocalKey)');
+        if (selector) selector.style.display = 'none';
+        // Continue with normal flow (WASM will create LocalKey)
+      });
+    }
+  }
+  
+  // Initialize selector on page load
+  window.addEventListener('DOMContentLoaded', () => {
+    setupIdentitySelector();
+  });
+
+  /**
    * Cleanup on page unload
    */
   window.addEventListener('beforeunload', () => {
@@ -588,5 +808,5 @@ function displayMessage(role, content) {
     }
   });
 
-  // Export for external use
-  export { AuroraPortal, portal };
+  // Export for external use (including passkey functions)
+  export { AuroraPortal, portal, createPasskey, signWithPasskey };
