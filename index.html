@@ -46,6 +46,8 @@
       .info-item{ display:flex; align-items:center; gap:6px; }
       .dot{ width:8px; height:8px; border-radius:50%; background:var(--accent); animation:pulse 2s ease-in-out infinite; }
       @keyframes pulse{ 0%,100%{opacity:.5} 50%{opacity:1} }
+      button:hover{ transform: translateY(-2px); }
+      button:active{ transform: translateY(0); }
       footer{ margin-top:18px; font-size:12px; color:#9ec1be; opacity:.8 }
       @media(min-width:720px){ h1{font-size:42px} img.logo{max-width:260px} }
     </style>
@@ -61,6 +63,38 @@
         <!-- Status indicator -->
         <div id="status" class="status info">Initializing Aurora Intelligence System...</div>
         
+        <!-- Identity panel -->
+        <div id="identity-panel" style="display:none; margin: 16px auto; padding: 16px; background: rgba(10, 199, 189, 0.05); border: 1px solid rgba(10, 199, 189, 0.2); border-radius: 8px; max-width: 600px;">
+          <div style="font-size: 14px; color: var(--accent); font-weight: 600; margin-bottom: 8px;">
+            🔐 Decentralized Identity
+          </div>
+          <div style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">
+            Your identity is stored locally in your browser. No external services required.
+          </div>
+          <div style="text-align: left; font-size: 12px; line-height: 1.6;">
+            <div style="margin-bottom: 8px;">
+              <strong style="color: var(--text);">DID:</strong><br>
+              <code id="did-full" style="background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 4px; word-break: break-all; color: var(--accent);">-</code>
+            </div>
+            <div style="margin-bottom: 12px;">
+              <strong style="color: var(--text);">Algorithm:</strong> ECDSA P-256 (NIST standard)
+            </div>
+          </div>
+          
+          <!-- Action buttons -->
+          <div style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; justify-content: center;">
+            <button id="btn-sign-test" style="padding: 8px 16px; background: var(--accent); color: var(--bg1); border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; transition: transform 0.2s;">
+              🖊️ Test Signature
+            </button>
+            <button id="btn-export-identity" style="padding: 8px 16px; background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; transition: transform 0.2s;">
+              📥 Export Identity
+            </button>
+            <button id="btn-reset-identity" style="padding: 8px 16px; background: rgba(255,107,107,0.2); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.3); border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; transition: transform 0.2s;">
+              🗑️ Reset
+            </button>
+          </div>
+        </div>
+        
         <!-- Agent info -->
         <div class="info-row">
           <div class="info-item">
@@ -68,7 +102,7 @@
             <span>P2P: <strong id="peer-count">0</strong> peers</span>
           </div>
           <div class="info-item">
-            <span>DID: <strong id="did">-</strong></span>
+            <span>Type: <strong id="identity-type">-</strong></span>
           </div>
         </div>
         

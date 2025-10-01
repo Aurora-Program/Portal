@@ -149,24 +149,23 @@ class AuroraPortal {
 // Global portal instance
 let portal = null;
 
-/**
- * Initialize Aurora Portal when page loads
- */
-window.addEventListener('DOMContentLoaded', async () => {
-  console.log('Aurora Portal loading...');
-  
-  portal = new AuroraPortal();
-  
-  // Initialize portal
-  const success = await portal.initialize();
-  
-  if (success) {
-    console.log('Aurora Portal ready!');
-    setupEventListeners();
-  }
-});
-
-/**
+  /**
+   * Initialize Aurora Portal when page loads
+   */
+  window.addEventListener('DOMContentLoaded', async () => {
+    console.log('Aurora Portal loading...');
+    
+    portal = new AuroraPortal();
+    
+    // Initialize portal
+    const success = await portal.initialize();
+    
+    if (success) {
+      console.log('Aurora Portal ready!');
+      setupEventListeners();
+      setupIdentityUI();
+    }
+  });/**
  * Setup UI event listeners
  */
 function setupEventListeners() {
@@ -212,14 +211,135 @@ function displayMessage(role, content) {
   chatHistory.scrollTop = chatHistory.scrollHeight;
 }
 
-/**
- * Cleanup on page unload
- */
-window.addEventListener('beforeunload', () => {
-  if (portal) {
-    portal.shutdown();
+  /**
+   * Setup identity UI and action buttons
+   */
+  function setupIdentityUI() {
+    const identityPanel = document.getElementById('identity-panel');
+    const didFullEl = document.getElementById('did-full');
+    const identityTypeEl = document.getElementById('identity-type');
+    
+    if (identityPanel && portal.agent) {
+      // Show identity panel
+      identityPanel.style.display = 'block';
+      
+      // Display full DID
+      const did = portal.agent.get_did();
+      if (didFullEl) didFullEl.textContent = did;
+      if (identityTypeEl) identityTypeEl.textContent = 'Decentralized';
+      
+      // Test Signature button
+      const btnSignTest = document.getElementById('btn-sign-test');
+      if (btnSignTest) {
+        btnSignTest.addEventListener('click', async () => {
+          try {
+            btnSignTest.disabled = true;
+            btnSignTest.textContent = '🔐 Signing...';
+            
+            const message = `Test signature from ${did} at ${new Date().toISOString()}`;
+            console.log('📝 Signing message:', message);
+            
+            const signature = await portal.agent.sign_message(message);
+            console.log('✅ Signature:', signature.substring(0, 32) + '...');
+            console.log('   Length:', signature.length / 2, 'bytes');
+            
+            // Verify
+            const { verify_signature } = await import('/wasm-client/pkg/aurora_wasm_client.js?v=2');
+            const publicKey = portal.agent.get_public_key();
+            const isValid = await verify_signature(publicKey, message, signature);
+            
+            if (isValid) {
+              alert(`✅ Signature Test Successful!\n\nMessage: ${message.substring(0, 60)}...\n\nSignature: ${signature.substring(0, 40)}...\n\nLength: ${signature.length / 2} bytes\n\nVerification: VALID ✓`);
+            } else {
+              alert('❌ Signature verification failed!');
+            }
+            
+          } catch (error) {
+            console.error('Signature test failed:', error);
+            alert('❌ Signature test failed: ' + error.message);
+          } finally {
+            btnSignTest.disabled = false;
+            btnSignTest.textContent = '🖊️ Test Signature';
+          }
+        });
+      }
+      
+      // Export Identity button
+      const btnExport = document.getElementById('btn-export-identity');
+      if (btnExport) {
+        btnExport.addEventListener('click', () => {
+          try {
+            const did = portal.agent.get_did();
+            const publicKey = portal.agent.get_public_key();
+            
+            const identity = {
+              version: '1.0',
+              did: did,
+              publicKey: JSON.parse(publicKey),
+              algorithm: 'ECDSA-P256',
+              created: new Date().toISOString(),
+              note: 'Private key remains in browser localStorage. This export contains only public information.'
+            };
+            
+            const blob = new Blob([JSON.stringify(identity, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `aurora-identity-${did.split(':').pop().substring(0, 8)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            console.log('✅ Identity exported (public key only)');
+          } catch (error) {
+            console.error('Export failed:', error);
+            alert('❌ Export failed: ' + error.message);
+          }
+        });
+      }
+      
+      // Reset Identity button
+      const btnReset = document.getElementById('btn-reset-identity');
+      if (btnReset) {
+        btnReset.addEventListener('click', async () => {
+          const confirmed = confirm(
+            '⚠️ WARNING: Reset Identity?\n\n' +
+            'This will delete your current decentralized identity.\n' +
+            'You will lose access to:\n' +
+            '- Your DID\n' +
+            '- Your signing keys\n' +
+            '- Any reputation associated with this identity\n\n' +
+            'A new identity will be generated on next reload.\n\n' +
+            'Are you sure?'
+          );
+          
+          if (confirmed) {
+            try {
+              // Clear localStorage
+              localStorage.removeItem('aurora_identity');
+              localStorage.removeItem('aurora_private_key_jwk');
+              
+              console.log('✅ Identity reset. Reloading...');
+              alert('✅ Identity deleted. Page will reload to generate a new identity.');
+              
+              window.location.reload();
+            } catch (error) {
+              console.error('Reset failed:', error);
+              alert('❌ Reset failed: ' + error.message);
+            }
+          }
+        });
+      }
+    }
   }
-});
 
-// Export for external use
-export { AuroraPortal, portal };
+  /**
+   * Cleanup on page unload
+   */
+  window.addEventListener('beforeunload', () => {
+    if (portal) {
+      portal.shutdown();
+    }
+  });
+
+  // Export for external use
+  export { AuroraPortal, portal };
