@@ -66,6 +66,7 @@ class AuroraPortal {
       // Update UI
       this.showStatus(`Connected as ${did.slice(0, 20)}...`, 'success');
       this.updatePeerCount(peerCount);
+      this.updateDID(did);
       this.enableChat();
 
       return true;
@@ -134,6 +135,14 @@ class AuroraPortal {
     const peerCountEl = document.getElementById('peer-count');
     if (peerCountEl) {
       peerCountEl.textContent = count;
+    }
+  }
+
+  updateDID(did) {
+    // Update short DID in info row (if element exists in future)
+    const didEl = document.getElementById('did');
+    if (didEl) {
+      didEl.textContent = did.slice(0, 20) + '...';
     }
   }
 
@@ -215,13 +224,19 @@ function displayMessage(role, content) {
    * Setup identity UI and action buttons
    */
   function setupIdentityUI() {
+    console.log('Setting up identity UI...');
+    
     const identityPanel = document.getElementById('identity-panel');
     const didFullEl = document.getElementById('did-full');
     const identityTypeEl = document.getElementById('identity-type');
     
+    console.log('Identity panel element:', identityPanel);
+    console.log('Portal agent:', portal.agent);
+    
     if (identityPanel && portal.agent) {
       // Show identity panel
       identityPanel.style.display = 'block';
+      console.log('✅ Identity panel displayed');
       
       // Display full DID
       const did = portal.agent.get_did();
