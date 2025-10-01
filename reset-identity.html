@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Aurora Identity</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a1f2e 0%, #1a3a4a 100%);
+      color: #e0f4f3;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      max-width: 500px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 16px;
+      color: #0ac7bd;
+    }
+    p {
+      font-size: 14px;
+      color: #9ec1be;
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #ff6b6b, #c92a2a);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 12px;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+    }
+    button.secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+    }
+    .info {
+      background: rgba(10, 199, 189, 0.2);
+      border: 1px solid rgba(10, 199, 189, 0.3);
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 16px;
+      font-size: 12px;
+      color: #0ac7bd;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🗑️ Reset Aurora Identity</h1>
+    <p>This will clear all Aurora identity data from your browser, allowing you to start fresh and choose a new identity method (Passkey or LocalKey).</p>
+    
+    <button onclick="resetAll()">
+      🗑️ Clear All Identity Data
+    </button>
+    
+    <button class="secondary" onclick="window.location.href='/'">
+      ← Back to Portal
+    </button>
+    
+    <div class="info" id="status" style="display: none;">
+      
+    </div>
+  </div>
+
+  <script>
+    function resetAll() {
+      if (!confirm('Are you sure you want to clear all identity data?\n\nThis will remove:\n• LocalKey identity\n• Passkey credential info\n• Private keys\n\nYou will need to create a new identity.')) {
+        return;
+      }
+      
+      try {
+        // Clear all Aurora data
+        localStorage.removeItem('aurora_identity');
+        localStorage.removeItem('aurora_private_key_jwk');
+        localStorage.removeItem('aurora_passkey_info');
+        
+        const status = document.getElementById('status');
+        status.style.display = 'block';
+        status.style.background = 'rgba(16, 219, 159, 0.2)';
+        status.style.borderColor = 'rgba(16, 219, 159, 0.3)';
+        status.style.color = '#10db9f';
+        status.innerHTML = '✅ All identity data cleared!<br><br>Redirecting to portal in 2 seconds...';
+        
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 2000);
+        
+      } catch (error) {
+        const status = document.getElementById('status');
+        status.style.display = 'block';
+        status.style.background = 'rgba(255, 107, 107, 0.2)';
+        status.style.borderColor = 'rgba(255, 107, 107, 0.3)';
+        status.style.color = '#ff6b6b';
+        status.textContent = '❌ Error: ' + error.message;
+      }
+    }
+    
+    // Show current status
+    window.addEventListener('DOMContentLoaded', () => {
+      const hasIdentity = localStorage.getItem('aurora_identity');
+      const hasPasskey = localStorage.getItem('aurora_passkey_info');
+      const hasPrivateKey = localStorage.getItem('aurora_private_key_jwk');
+      
+      let statusText = 'Current status:\n';
+      if (hasIdentity) statusText += '✓ LocalKey identity\n';
+      if (hasPasskey) statusText += '✓ Passkey credential\n';
+      if (hasPrivateKey) statusText += '✓ Private key\n';
+      if (!hasIdentity && !hasPasskey && !hasPrivateKey) {
+        statusText = 'No identity data found';
+      }
+      
+      console.log(statusText);
+    });
+  </script>
+</body>
+</html>

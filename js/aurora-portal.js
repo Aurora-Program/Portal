@@ -164,34 +164,32 @@ let portal = null;
   function checkForPasskey() {
     const passkeyInfo = localStorage.getItem('aurora_passkey_info');
     const identityInfo = localStorage.getItem('aurora_identity');
+    const selector = document.getElementById('identity-selector');
+    const toggleBtn = document.getElementById('btn-toggle-identity');
     
-    // If user has passkey but no WASM identity, show selector
-    if (passkeyInfo && !identityInfo) {
-      console.log('✅ Passkey found, no WASM identity');
-      const selector = document.getElementById('identity-selector');
-      if (selector) {
-        selector.style.display = 'block';
-        // Auto-select passkey option
-        const status = document.getElementById('status');
-        if (status) {
-          status.textContent = '🔐 Passkey detected! Choose how to proceed.';
-          status.className = 'status success';
-        }
+    // If user has identity (either type), hide selector and show toggle
+    if (identityInfo || passkeyInfo) {
+      console.log('✅ Identity found, hiding selector');
+      if (selector) selector.style.display = 'none';
+      if (toggleBtn) toggleBtn.style.display = 'block';
+      
+      // If has WASM identity, we're good to go
+      if (identityInfo) {
+        return false; // Has identity, no need for choice
       }
-      return true;
+      
+      // Has passkey but no WASM identity (shouldn't happen, but handle it)
+      if (passkeyInfo && !identityInfo) {
+        console.log('⚠️ Passkey found but no WASM identity (unusual state)');
+        return false; // Still proceed normally
+      }
     }
     
-    // If no identity at all, show selector
-    if (!identityInfo) {
-      console.log('ℹ️ No identity found, showing selector');
-      const selector = document.getElementById('identity-selector');
-      if (selector) {
-        selector.style.display = 'block';
-      }
-      return true;
-    }
-    
-    return false;
+    // No identity at all, show selector and hide toggle
+    console.log('ℹ️ No identity found, showing selector');
+    if (selector) selector.style.display = 'block';
+    if (toggleBtn) toggleBtn.style.display = 'none';
+    return true;
   }
 
   /**
@@ -204,6 +202,10 @@ let portal = null;
     const needsIdentityChoice = checkForPasskey();
     
     if (!needsIdentityChoice) {
+      // Has identity, show toggle button
+      const toggleBtn = document.getElementById('btn-toggle-identity');
+      if (toggleBtn) toggleBtn.style.display = 'block';
+      
       // Normal initialization with WASM identity
       portal = new AuroraPortal();
       
@@ -216,6 +218,9 @@ let portal = null;
       }
     } else {
       console.log('⏸️ Waiting for user to choose identity method...');
+      // Ensure toggle is hidden
+      const toggleBtn = document.getElementById('btn-toggle-identity');
+      if (toggleBtn) toggleBtn.style.display = 'none';
     }
   });/**
  * Setup UI event listeners
@@ -267,7 +272,7 @@ function displayMessage(role, content) {
    * Setup identity UI and action buttons
    */
   function setupIdentityUI() {
-    console.log('Setting up identity UI...');
+    console.log('🔧 Setting up identity UI...');
     
     const identityPanel = document.getElementById('identity-panel');
     const didFullEl = document.getElementById('did-full');
@@ -275,8 +280,14 @@ function displayMessage(role, content) {
     const identityDescription = document.getElementById('identity-description');
     const toggleBtn = document.getElementById('btn-toggle-identity');
     
-    console.log('Identity panel element:', identityPanel);
-    console.log('Portal agent:', portal.agent);
+    console.log('🔍 Identity panel element:', identityPanel);
+    console.log('🔍 Portal object:', portal);
+    console.log('🔍 Portal agent:', portal ? portal.agent : 'portal is null');
+    
+    if (!portal || !portal.agent) {
+      console.error('❌ Portal or agent not initialized! Cannot setup identity UI.');
+      return;
+    }
     
     // Check if using passkey
     const passkeyInfo = localStorage.getItem('aurora_passkey_info');
@@ -312,13 +323,18 @@ function displayMessage(role, content) {
       
       // Display full DID
       const did = portal.agent.get_did();
-      if (didFullEl) didFullEl.textContent = did;
-      if (identityTypeEl) identityTypeEl.textContent = 'Decentralized';
+      if (didFullEl) {
+        didFullEl.textContent = did;
+        console.log('✅ DID displayed:', did);
+      }
       
       // Test Signature button
       const btnSignTest = document.getElementById('btn-sign-test');
+      console.log('🔍 Test Signature button:', btnSignTest);
       if (btnSignTest) {
+        console.log('✅ Registering Test Signature button click handler');
         btnSignTest.addEventListener('click', async () => {
+          console.log('🖊️ Test Signature button clicked!');
           try {
             btnSignTest.disabled = true;
             btnSignTest.textContent = '🔐 Signing...';
@@ -353,8 +369,11 @@ function displayMessage(role, content) {
       
       // Export Identity button
       const btnExport = document.getElementById('btn-export-identity');
+      console.log('🔍 Export button:', btnExport);
       if (btnExport) {
+        console.log('✅ Registering Export button click handler');
         btnExport.addEventListener('click', async () => {
+          console.log('📥 Export button clicked!');
           try {
             // Ask for password to encrypt private key
             const password = prompt(
@@ -424,8 +443,11 @@ function displayMessage(role, content) {
       
       // Import Identity button
       const btnImport = document.getElementById('btn-import-identity');
+      console.log('🔍 Import button:', btnImport);
       if (btnImport) {
+        console.log('✅ Registering Import button click handler');
         btnImport.addEventListener('click', async () => {
+          console.log('📤 Import button clicked!');
           try {
             // Create file input
             const input = document.createElement('input');
@@ -518,8 +540,11 @@ function displayMessage(role, content) {
       
       // Reset Identity button
       const btnReset = document.getElementById('btn-reset-identity');
+      console.log('🔍 Reset button:', btnReset);
       if (btnReset) {
+        console.log('✅ Registering Reset button click handler');
         btnReset.addEventListener('click', async () => {
+          console.log('🗑️ Reset button clicked!');
           const confirmed = confirm(
             '⚠️ WARNING: Reset Identity?\n\n' +
             'This will delete your current decentralized identity.\n' +
@@ -846,7 +871,17 @@ function displayMessage(role, content) {
     if (btnUseLocalKey) {
       btnUseLocalKey.addEventListener('click', async () => {
         console.log('Using browser storage (LocalKey)');
+        
+        // Disable button and show loading
+        btnUseLocalKey.disabled = true;
+        btnUseLocalKey.innerHTML = '<div style="font-size: 24px; margin-bottom: 4px;">⏳</div><div>Creating identity...</div>';
+        
+        // Hide selector
         if (selector) selector.style.display = 'none';
+        
+        // Show toggle button
+        const toggleBtn = document.getElementById('btn-toggle-identity');
+        if (toggleBtn) toggleBtn.style.display = 'block';
         
         // Initialize portal with WASM LocalKey
         portal = new AuroraPortal();
@@ -856,6 +891,12 @@ function displayMessage(role, content) {
           console.log('✅ Portal initialized with LocalKey');
           setupEventListeners();
           setupIdentityUI();
+        } else {
+          // If failed, show selector again
+          if (selector) selector.style.display = 'block';
+          if (toggleBtn) toggleBtn.style.display = 'none';
+          btnUseLocalKey.disabled = false;
+          btnUseLocalKey.innerHTML = '<div style="font-size: 24px; margin-bottom: 4px;">🔑</div><div style="font-weight: 700; margin-bottom: 4px;">Browser Storage (Simple)</div>';
         }
       });
     }
