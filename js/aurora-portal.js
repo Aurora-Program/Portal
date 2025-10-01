@@ -159,20 +159,63 @@ class AuroraPortal {
 let portal = null;
 
   /**
+   * Check if user has passkey on startup
+   */
+  function checkForPasskey() {
+    const passkeyInfo = localStorage.getItem('aurora_passkey_info');
+    const identityInfo = localStorage.getItem('aurora_identity');
+    
+    // If user has passkey but no WASM identity, show selector
+    if (passkeyInfo && !identityInfo) {
+      console.log('✅ Passkey found, no WASM identity');
+      const selector = document.getElementById('identity-selector');
+      if (selector) {
+        selector.style.display = 'block';
+        // Auto-select passkey option
+        const status = document.getElementById('status');
+        if (status) {
+          status.textContent = '🔐 Passkey detected! Choose how to proceed.';
+          status.className = 'status success';
+        }
+      }
+      return true;
+    }
+    
+    // If no identity at all, show selector
+    if (!identityInfo) {
+      console.log('ℹ️ No identity found, showing selector');
+      const selector = document.getElementById('identity-selector');
+      if (selector) {
+        selector.style.display = 'block';
+      }
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
    * Initialize Aurora Portal when page loads
    */
   window.addEventListener('DOMContentLoaded', async () => {
     console.log('Aurora Portal loading...');
     
-    portal = new AuroraPortal();
+    // Check for existing passkey first
+    const needsIdentityChoice = checkForPasskey();
     
-    // Initialize portal
-    const success = await portal.initialize();
-    
-    if (success) {
-      console.log('Aurora Portal ready!');
-      setupEventListeners();
-      setupIdentityUI();
+    if (!needsIdentityChoice) {
+      // Normal initialization with WASM identity
+      portal = new AuroraPortal();
+      
+      const success = await portal.initialize();
+      
+      if (success) {
+        console.log('Aurora Portal ready!');
+        setupEventListeners();
+        setupIdentityUI();
+      }
+    } else {
+      console.log('⏸️ Waiting for user to choose identity method...');
     }
   });/**
  * Setup UI event listeners
@@ -228,11 +271,16 @@ function displayMessage(role, content) {
     
     const identityPanel = document.getElementById('identity-panel');
     const didFullEl = document.getElementById('did-full');
-    const identityTypeEl = document.getElementById('identity-type');
+    const identityTypeBadge = document.getElementById('identity-type-badge');
+    const identityDescription = document.getElementById('identity-description');
     const toggleBtn = document.getElementById('btn-toggle-identity');
     
     console.log('Identity panel element:', identityPanel);
     console.log('Portal agent:', portal.agent);
+    
+    // Check if using passkey
+    const passkeyInfo = localStorage.getItem('aurora_passkey_info');
+    const hasPasskey = !!passkeyInfo;
     
     // Setup toggle button
     if (toggleBtn) {
@@ -250,7 +298,17 @@ function displayMessage(role, content) {
     if (identityPanel && portal.agent) {
       // Keep panel hidden by default (controlled by toggle button)
       identityPanel.style.display = 'none';
-      console.log('✅ Identity panel setup (hidden by default)');
+      
+      // Update badge and description based on identity type
+      if (hasPasskey && identityTypeBadge && identityDescription) {
+        identityTypeBadge.textContent = '🔐 Passkey';
+        identityTypeBadge.style.background = 'linear-gradient(135deg, #0dc7bd, #0aa2a7)';
+        identityTypeBadge.style.color = 'white';
+        identityDescription.textContent = '🛡️ Your identity is secured by hardware (Windows Hello). Private keys never leave your device.';
+        console.log('✅ Identity panel setup with PASSKEY mode');
+      } else {
+        console.log('✅ Identity panel setup with LocalKey mode (hidden by default)');
+      }
       
       // Display full DID
       const did = portal.agent.get_did();
@@ -786,10 +844,19 @@ function displayMessage(role, content) {
     }
     
     if (btnUseLocalKey) {
-      btnUseLocalKey.addEventListener('click', () => {
+      btnUseLocalKey.addEventListener('click', async () => {
         console.log('Using browser storage (LocalKey)');
         if (selector) selector.style.display = 'none';
-        // Continue with normal flow (WASM will create LocalKey)
+        
+        // Initialize portal with WASM LocalKey
+        portal = new AuroraPortal();
+        const success = await portal.initialize();
+        
+        if (success) {
+          console.log('✅ Portal initialized with LocalKey');
+          setupEventListeners();
+          setupIdentityUI();
+        }
       });
     }
   }
