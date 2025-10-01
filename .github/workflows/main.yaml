@@ -5,7 +5,8 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
@@ -13,5 +14,14 @@ jobs:
           aws-access-key-id:  ${{ secrets.ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.ACCESS_KEY_SECRET }}
           aws-region:  ${{ vars.REGION}}
-      - name: Copy Templates
-        run: aws s3 sync ./ s3://${{vars.CODE_BUCKET}} --exclude ".git/*" --exclude ".vscode/*" --exclude ".github/*" --exclude "Infrastructure/*" --exclude "*.yaml" --exclude "*.yml" --exclude "*.md" --exclude "*.json" --exclude "*.log" --delete
+
+      - name: Copy Templates to S3
+        run: |
+          # Ensure repository files are present (checkout step above).
+          # Sync entire repo root but keep VCS/CI/infrastructure files excluded.
+          aws s3 sync ./ s3://${{ vars.CODE_BUCKET }} \
+            --exclude ".git/*" \
+            --exclude ".github/*" \
+            --exclude ".vscode/*" \
+            --exclude "Infrastructure/*" \
+            --delete
