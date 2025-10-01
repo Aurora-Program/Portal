@@ -9,13 +9,16 @@ use web_sys::{window, CryptoKey, SubtleCrypto};
 use js_sys::{Object, Reflect, Uint8Array, Array};
 
 use crate::storage::LocalStorage;
+use crate::indexed_db::IndexedDB;
+
+const PRIVATE_KEY_ID: &str = "aurora_private_key";
 
 /// User identity (DID + Web Crypto keypair)
 #[derive(Clone)]
 pub struct Identity {
     did: String,
     public_key_jwk: String,  // JSON Web Key format for public key
-    // Note: private key stays in browser's CryptoKey (non-extractable for security)
+    // Note: private key stored in IndexedDB, accessed only for signing
 }
 
 impl Identity {
@@ -51,7 +54,7 @@ impl Identity {
         Reflect::set(&algorithm, &"namedCurve".into(), &"P-256".into())
             .map_err(|_| "Failed to set curve")?;
 
-        // Generate keypair (extractable public, non-extractable private for security)
+        // Generate keypair (both extractable for IndexedDB storage)
         let key_usages = Array::new();
         key_usages.push(&"sign".into());
         key_usages.push(&"verify".into());
@@ -62,10 +65,14 @@ impl Identity {
         let keypair = JsFuture::from(keypair_promise).await
             .map_err(|e| format!("Key generation failed: {:?}", e))?;
 
-        // Extract public key
+        // Extract public and private keys
         let public_key = Reflect::get(&keypair, &"publicKey".into())
             .map_err(|_| "Failed to get public key")?;
         let public_key = CryptoKey::from(public_key);
+
+        let private_key = Reflect::get(&keypair, &"privateKey".into())
+            .map_err(|_| "Failed to get private key")?;
+        let private_key = CryptoKey::from(private_key);
 
         // Export public key to JWK format
         let export_promise = subtle.export_key("jwk", &public_key)
@@ -78,6 +85,11 @@ impl Identity {
             .map_err(|_| "Failed to stringify JWK")?
             .as_string()
             .ok_or("JWK is not a string")?;
+
+        // Store private key in IndexedDB
+        let db = IndexedDB::open().await?;
+        db.store_key(PRIVATE_KEY_ID, &private_key).await?;
+        log::info!("Private key stored securely in IndexedDB");
 
         // Compute DID from public key
         let did = Self::compute_did_from_jwk(&public_key_jwk)?;
@@ -119,19 +131,37 @@ impl Identity {
         format!("12D3KooW{}", hex::encode(&hash[..16]))
     }
 
-    /// Sign a message using Web Crypto API
+    /// Sign a message using Web Crypto API with ECDSA P-256
     pub async fn sign(&self, message: &[u8]) -> Result<Vec<u8>, String> {
         let subtle = Self::get_subtle_crypto()?;
 
-        // Import the private key (we need to retrieve it from IndexedDB in a real implementation)
-        // For now, we'll use a simplified approach
-        log::warn!("Signing is not fully implemented yet - using hash for Phase 0");
-        
-        // Temporary: hash the message with public key (will be replaced with real signing)
-        let mut hasher = Sha256::new();
-        hasher.update(message);
-        hasher.update(self.public_key_jwk.as_bytes());
-        Ok(hasher.finalize().to_vec())
+        // Retrieve private key from IndexedDB
+        let db = IndexedDB::open().await?;
+        let private_key = db.get_key(PRIVATE_KEY_ID).await?
+            .ok_or("Private key not found in IndexedDB")?;
+
+        // Configure signing algorithm (ECDSA with SHA-256)
+        let algorithm = Object::new();
+        Reflect::set(&algorithm, &"name".into(), &"ECDSA".into())
+            .map_err(|_| "Failed to set algorithm name")?;
+        Reflect::set(&algorithm, &"hash".into(), &"SHA-256".into())
+            .map_err(|_| "Failed to set hash algorithm")?;
+
+        // Sign the message directly with byte slice
+        let sign_promise = subtle.sign_with_object_and_u8_array(&algorithm, &private_key, message)
+            .map_err(|e| format!("Failed to sign: {:?}", e))?;
+
+        let signature = JsFuture::from(sign_promise).await
+            .map_err(|e| format!("Signing failed: {:?}", e))?;
+
+        // Convert signature to Vec<u8>
+        let signature_array = Uint8Array::new(&signature);
+        let mut signature_bytes = vec![0u8; signature_array.length() as usize];
+        signature_array.copy_to(&mut signature_bytes);
+
+        log::info!("Message signed successfully ({} bytes)", signature_bytes.len());
+
+        Ok(signature_bytes)
     }
 
     /// Verify a signature using Web Crypto API
@@ -139,8 +169,10 @@ impl Identity {
         let subtle = Self::get_subtle_crypto()?;
 
         // Parse JWK
-        let jwk = js_sys::JSON::parse(public_key_jwk)
+        let jwk_value = js_sys::JSON::parse(public_key_jwk)
             .map_err(|_| "Failed to parse public key JWK")?;
+        let jwk_obj: Object = jwk_value.dyn_into()
+            .map_err(|_| "JWK is not an object")?;
 
         // Configure algorithm
         let algorithm = Object::new();
@@ -153,7 +185,7 @@ impl Identity {
         let key_usages = Array::new();
         key_usages.push(&"verify".into());
 
-        let import_promise = subtle.import_key_with_object("jwk", &jwk, &algorithm, true, &key_usages)
+        let import_promise = subtle.import_key_with_object("jwk", &jwk_obj, &algorithm, true, &key_usages)
             .map_err(|e| format!("Failed to import key: {:?}", e))?;
 
         let public_key = JsFuture::from(import_promise).await
@@ -167,15 +199,12 @@ impl Identity {
         Reflect::set(&sign_algorithm, &"hash".into(), &"SHA-256".into())
             .map_err(|_| "Failed to set hash")?;
 
-        // Verify signature
-        let signature_array = Uint8Array::from(signature);
-        let message_array = Uint8Array::from(message);
-
+        // Verify signature (web-sys expects byte slices directly)
         let verify_promise = subtle.verify_with_object_and_u8_array_and_u8_array(
             &sign_algorithm,
             &public_key,
-            &signature_array,
-            &message_array
+            signature,
+            message
         ).map_err(|e| format!("Verification failed: {:?}", e))?;
 
         let result = JsFuture::from(verify_promise).await

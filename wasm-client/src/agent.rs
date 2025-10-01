@@ -174,6 +174,55 @@ impl AuroraAgent {
         self.p2p.peer_count()
     }
 
+    /// Get public key in JWK format
+    pub fn get_public_key(&self) -> String {
+        self.identity.public_key_jwk()
+    }
+
+    /// Sign a message using the user's private key
+    /// Returns the signature as a hex-encoded string
+    pub async fn sign_message(&self, message: String) -> Result<String, JsValue> {
+        log::info!("Signing message: {}", message);
+        
+        let signature = self.identity.sign(message.as_bytes())
+            .await
+            .map_err(|e| JsValue::from_str(&format!("Signing failed: {}", e)))?;
+
+        // Convert to hex for easy transport
+        let hex_signature = signature.iter()
+            .map(|b| format!("{:02x}", b))
+            .collect::<String>();
+
+        log::info!("Signature generated: {}...", &hex_signature[..16]);
+        
+        Ok(hex_signature)
+    }
+
+    /// Verify a signature (static method)
+    /// This can be called by other peers to verify messages
+    pub async fn verify_signature(
+        public_key_jwk: String,
+        message: String,
+        hex_signature: String,
+    ) -> Result<bool, JsValue> {
+        log::info!("Verifying signature...");
+
+        // Convert hex signature back to bytes
+        let signature = (0..hex_signature.len())
+            .step_by(2)
+            .map(|i| u8::from_str_radix(&hex_signature[i..i + 2], 16))
+            .collect::<Result<Vec<u8>, _>>()
+            .map_err(|e| JsValue::from_str(&format!("Invalid hex: {}", e)))?;
+
+        let valid = Identity::verify(&public_key_jwk, message.as_bytes(), &signature)
+            .await
+            .map_err(|e| JsValue::from_str(&format!("Verification failed: {}", e)))?;
+
+        log::info!("Signature valid: {}", valid);
+        
+        Ok(valid)
+    }
+
     /// Shutdown the agent
     pub async fn shutdown(&mut self) -> Result<(), JsValue> {
         log::info!("Shutting down Aurora Agent...");

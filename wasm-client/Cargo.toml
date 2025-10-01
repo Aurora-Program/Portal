@@ -40,6 +40,16 @@ web-sys = { version = "0.3", features = [
     "CryptoKey",
     "CryptoKeyPair",
     "JsonWebKey",
+    # IndexedDB for secure key storage
+    "IdbDatabase",
+    "IdbFactory",
+    "IdbOpenDbRequest",
+    "IdbObjectStore",
+    "IdbTransaction",
+    "IdbTransactionMode",
+    "IdbRequest",
+    "Event",
+    "EventTarget",
 ] }
 
 # P2P networking - DISABLED for now due to WASM compatibility issues

@@ -7,6 +7,7 @@ mod blockchain;
 mod models;
 mod crypto;
 mod storage;
+mod indexed_db;
 
 pub use agent::AuroraAgent;
 pub use p2p::P2PNetwork;
@@ -52,4 +53,20 @@ pub fn get_version() -> String {
 #[wasm_bindgen]
 pub fn health_check() -> bool {
     true
+}
+
+/// Sign a message with the agent's private key
+#[wasm_bindgen]
+pub async fn sign_message(agent: &AuroraAgent, message: String) -> Result<String, JsValue> {
+    agent.sign_message(message).await
+}
+
+/// Verify a signature
+#[wasm_bindgen]
+pub async fn verify_signature(
+    public_key_jwk: String,
+    message: String,
+    signature: String,
+) -> Result<bool, JsValue> {
+    AuroraAgent::verify_signature(public_key_jwk, message, signature).await
 }
