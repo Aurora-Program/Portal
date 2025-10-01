@@ -17,6 +17,8 @@ serde_json = "1.0"
 serde-wasm-bindgen = "0.6"
 console_error_panic_hook = "0.1"
 js-sys = "0.3"
+
+# getrandom with wasm support - force version and features for all dependencies
 getrandom = { version = "0.2", features = ["js"] }
 
 # Web APIs
@@ -71,3 +73,7 @@ opt-level = "z"     # Optimize for size
 lto = true          # Enable link-time optimization
 codegen-units = 1   # Better optimization
 panic = "abort"     # Smaller binary
+
+# Force all dependencies to use getrandom 0.2 with js feature for WASM compatibility
+[patch.crates-io]
+getrandom = { version = "0.2", features = ["js"] }
