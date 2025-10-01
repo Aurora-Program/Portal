@@ -14,4 +14,4 @@ jobs:
           aws-secret-access-key: ${{ secrets.ACCESS_KEY_SECRET }}
           aws-region:  ${{ vars.REGION}}
       - name: Copy Templates
-        run: aws s3 sync ./ s3://${{vars.CODE_BUCKET}}
+        run: aws s3 sync ./ s3://${{vars.CODE_BUCKET}} --exclude ".git/*" --exclude ".vscode/*" --exclude ".github/*" --exclude "Infrastructure/*" --exclude "*.yaml" --exclude "*.yml" --exclude "*.md" --exclude "*.json" --exclude "*.log" --delete
