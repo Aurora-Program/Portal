@@ -1,12 +1,26 @@
-name: CopyToS3
+name: Build and Deploy to S3
 on: [push]
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build WASM client
+        run: |
+          cd wasm-client
+          wasm-pack build --target web --release
+          ls -la pkg/
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
@@ -15,13 +29,50 @@ jobs:
           aws-secret-access-key: ${{ secrets.ACCESS_KEY_SECRET }}
           aws-region:  ${{ vars.REGION}}
 
-      - name: Copy Templates to S3
+      - name: Deploy to S3
         run: |
-          # Ensure repository files are present (checkout step above).
-          # Sync entire repo root but keep VCS/CI/infrastructure files excluded.
+          # Sync entire repo including compiled WASM (pkg folder)
+          # Exclude VCS/CI/infra files and Rust source (keep pkg output)
           aws s3 sync ./ s3://${{ vars.CODE_BUCKET }} \
             --exclude ".git/*" \
             --exclude ".github/*" \
             --exclude ".vscode/*" \
             --exclude "Infrastructure/*" \
+            --exclude "wasm-client/src/*" \
+            --exclude "wasm-client/tests/*" \
+            --exclude "wasm-client/target/*" \
+            --exclude "wasm-client/Cargo.toml" \
+            --exclude "wasm-client/Cargo.lock" \
             --delete
+          
+          # Set correct Content-Type for WASM files (critical for browser loading)
+          echo "🔧 Setting Content-Type for WASM files..."
+          aws s3 cp s3://${{ vars.CODE_BUCKET }}/wasm-client/pkg/ \
+            s3://${{ vars.CODE_BUCKET }}/wasm-client/pkg/ \
+            --recursive \
+            --exclude "*" \
+            --include "*.wasm" \
+            --content-type "application/wasm" \
+            --metadata-directive REPLACE
+          
+          # Set correct Content-Type for JS modules (ES6 modules)
+          echo "🔧 Setting Content-Type for JS modules..."
+          aws s3 cp s3://${{ vars.CODE_BUCKET }}/wasm-client/pkg/ \
+            s3://${{ vars.CODE_BUCKET }}/wasm-client/pkg/ \
+            --recursive \
+            --exclude "*" \
+            --include "*.js" \
+            --content-type "application/javascript; charset=utf-8" \
+            --metadata-directive REPLACE
+          
+          aws s3 cp s3://${{ vars.CODE_BUCKET }}/js/ \
+            s3://${{ vars.CODE_BUCKET }}/js/ \
+            --recursive \
+            --exclude "*" \
+            --include "*.js" \
+            --content-type "application/javascript; charset=utf-8" \
+            --metadata-directive REPLACE
+          
+          echo "✅ Deployment complete!"
+          echo "📦 WASM bundle deployed to: wasm-client/pkg/"
+          echo "🌐 Portal files synced with correct MIME types"
