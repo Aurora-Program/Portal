@@ -1,291 +1,295 @@
-# Aurora Portal 🚀
+# Aurora WASM Client
 
-**Building the future through ethical intelligence and decentralized collaboration.**
+The **Aurora Intelligence System** - A WebAssembly client for decentralized P2P networking and blockchain interaction.
 
-> *"What took 10 engineers and 5 years in 2014 (IPFS), we're building with 1 developer + AI in 18 months (2025)."*
+## Overview
 
-Aurora Portal is the web entry point to the Aurora Network - a decentralized ecosystem for **verifiable AI model execution** with **Proof of Intelligence** at its core.
+This WASM client is the core of the Aurora Portal system. It runs in the browser and acts as the user's intelligent agent, providing:
 
-![Aurora Portal](assets/aurora-portal-logo.png)
+- **Identity Management**: DID (Decentralized Identifier) and cryptographic wallet
+- **P2P Networking**: Connect to the Aurora network without open ports (via relays/gateways)
+- **Blockchain Interface**: Interact with Aurora's L2 blockchain for model registry, settlements, and tokenization
+- **Model Management**: Load, verify, and execute AI models with hash-based integrity guarantees
+- **Ethical Compliance**: Built-in safeguards aligned with Aurora's founding principles
 
-## 🌟 What Makes Aurora Different?
-
-### The Problem
-- Centralized AI (OpenAI, Anthropic): "Trust us, our models are good"
-- Existing decentralized compute (Golem, iExec): No AI verification
-- AI + Blockchain projects (Fetch.ai): Vague promises, no real tech
-
-### Aurora's Solution
-1. **Proof of Intelligence (PoI)**: Every model = verifiable hash on-chain
-2. **Browser-native**: WASM client, no setup, 1-click start
-3. **Earn-by-contribution**: Run relays, host models, operate DNS → earn tokens
-4. **Trinity_3 Engine**: Ternary logic + fractal tensors (3-5 year moat)
-
-## 🎯 Core Features
-
-- **Decentralized Identity** (DID): Ed25519 cryptographic identity
-- **P2P Connectivity**: libp2p with WebSocket/WebRTC (no open ports needed)
-- **Blockchain Integration**: Aurora L2 for model registry & settlements
-- **Model Execution**: ONNX Runtime in WASM with hash verification
-- **Ethical AI**: Computational honesty (NULL values instead of hallucinations)
-
-## 🏗️ Architecture
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Aurora Ecosystem                          │
-├─────────────────────────────────────────────────────────────┤
-│  L7: Culture & Governance (Ethici, InnovaLab, Cooperative) │
-│  L6: Real Economy (Mobility, Housing, Education, Energy)    │
-│  L5: Service Layer (Unified API & Digital Services)         │
-│  L4: Orchestration (The Ethical Cloud)                      │
-│  L3: Intelligence (Collaborative Models Network)            │
-│  L2: Trust (Blockchain & Integrity)                         │
-│  L1: Physical (GPUs, CPUs, Storage, Bandwidth)              │
-└─────────────────────────────────────────────────────────────┘
-
-Aurora Portal = Web entry point that delivers the WASM client
+┌─────────────────────────────────────────────────────────┐
+│                    User Interface (JS)                   │
+├─────────────────────────────────────────────────────────┤
+│                   WASM Bindings (JS ↔ Rust)             │
+├─────────────────────────────────────────────────────────┤
+│                    Aurora Agent (Rust)                   │
+│  ┌────────────┬──────────────┬────────────────────────┐ │
+│  │  Identity  │  P2P Network │  Blockchain Interface  │ │
+│  └────────────┴──────────────┴────────────────────────┘ │
+│  ┌────────────┬──────────────┬────────────────────────┐ │
+│  │   Models   │   Storage    │    Cryptography        │ │
+│  └────────────┴──────────────┴────────────────────────┘ │
+└─────────────────────────────────────────────────────────┘
 ```
 
-## 📁 Project Structure
+## Key Features
 
-```
-Portal/
-├── index.html              # Main portal page
-├── assets/                 # Static assets (logo, images)
-│   └── aurora-portal-logo.png
-├── js/                     # JavaScript integration
-│   └── aurora-portal.js    # WASM client integration
-├── wasm-client/            # Rust WASM client
-│   ├── src/
-│   │   ├── lib.rs          # WASM entry point
-│   │   ├── agent.rs        # Aurora Agent
-│   │   ├── p2p.rs          # P2P networking (libp2p)
-│   │   ├── blockchain.rs   # Blockchain interface
-│   │   ├── models.rs       # Model registry
-│   │   ├── crypto.rs       # Identity & cryptography
-│   │   └── storage.rs      # LocalStorage wrapper
-│   ├── Cargo.toml          # Rust dependencies
-│   ├── build.ps1           # Build script (PowerShell)
-│   └── README.md           # WASM client docs
-├── Infrastructure/         # CloudFormation templates
-│   └── main.yml            # S3 + CloudFront setup
-├── Docs/                   # Documentation
-│   └── AuroraPortal.md     # Complete specification
-└── README.md               # This file
-```
-
-## ⚡ The AI Advantage
-
-**Why Aurora is achievable in 12 months** (vs 3-5 years for similar projects in 2014-2020):
-
-| Task | 2017 (Solo) | 2025 (Solo + Copilot) | Speedup |
-|------|-------------|----------------------|---------|
-| P2P networking | 3 weeks | 4 days | 5x |
-| Smart contracts | 2 weeks | 3 days | 4x |
-| WASM integration | 4 weeks | 1 week | 4x |
-| Documentation | 1 week | 1 day | 5x |
-| **Trinity_3 port** | N/A (would be 18 months) | **4-6 weeks** ✅ | **🔥 18x** |
-| **Overall** | - | - | **~4x (8x with Trinity_3)** |
-
-**In this project**:
-- 8 Rust modules (1,300 lines): 2 hours vs 2 weeks
-- 7 docs (5,100 lines): 3 hours vs 1 week
-- Trinity_3 analysis (2,206 lines): 20 mins vs 2 days
-- **🎯 Trinity_3 implementation**: ✅ **Already complete** (1,200+ lines Python)
-
-### 🔥 Critical Discovery: Trinity_3 Exists
-
-**We have a complete Trinity_3 implementation in Python** (1,200+ lines):
-- ✅ Trigate with O(1) LUT operations
-- ✅ FractalTensor with {3,9,27} hierarchy
-- ✅ Transcender, Evolver, Extender
-- ✅ FractalKnowledgeBase with multiverse support
-- ✅ Armonizador for coherence validation
-
-**Impact**: Timeline reduced from **24 months → 12 months** (50% faster)
-
-**Read more**: 
-- [Trinity_3 Discovery Analysis](TRINITY3_DISCOVERY.md) ⚡ **NEW**
-- [Why Aurora Will Succeed](WHY_AURORA_WILL_SUCCEED.md)
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- **Rust** (stable) - [Install](https://rustup.rs/)
-- **wasm-pack** - `cargo install wasm-pack`
-- **Python 3** (for local server) or **Node.js**
-- **GitHub Copilot** (recommended for development)
-
-### Build the WASM Client
-
-```powershell
-# Navigate to wasm-client directory
-cd wasm-client
-
-# Development build
-.\build.ps1 -BuildType dev
-
-# Production build (optimized)
-.\build.ps1 -BuildType release
-```
-
-### Run Locally
-
-```powershell
-# From project root
-python -m http.server 8000
-
-# Open browser
-# http://localhost:8000/index.html
-```
-
-## 🔧 Development
-
-### Build WASM for Different Targets
-
-```powershell
-# For web (default)
-.\build.ps1 -Target web
-
-# For bundlers (webpack, vite, rollup)
-.\build.ps1 -Target bundler
-
-# For Node.js
-.\build.ps1 -Target nodejs
-```
-
-### Test
-
-```bash
-# Run Rust tests
-cd wasm-client
-cargo test
-
-# Run WASM tests in browser
-wasm-pack test --headless --firefox
-```
-
-## 📦 Deployment
-
-### Deploy to AWS (S3 + CloudFront)
-
-The `Infrastructure/main.yml` CloudFormation template creates:
-- S3 bucket with encryption and versioning
-- Bucket policy allowing CloudFront access
-- Outputs for bucket name and ARN
-
-```powershell
-# Deploy CloudFormation stack
-aws cloudformation create-stack \
-  --stack-name aurora-portal \
-  --template-body file://Infrastructure/main.yml \
-  --parameters ParameterKey=BucketName,ParameterValue=aurora-portal-code \
-               ParameterKey=CloudFrontOriginAccessIdentity,ParameterValue=<OAI-ID>
-
-# Build WASM for production
-cd wasm-client
-.\build.ps1 -BuildType release
-
-# Upload to S3
-aws s3 sync . s3://aurora-portal-code/ --exclude "wasm-client/target/*" --exclude ".git/*"
-
-# Invalidate CloudFront cache
-aws cloudfront create-invalidation --distribution-id <DIST-ID> --paths "/*"
-```
-
-## 🌐 Key Features
-
-### 1. Decentralized Identity (DID)
+### 1. Identity (DID)
 - Ed25519 keypair generation
-- Persistent identity in browser LocalStorage
+- Persistent identity stored in LocalStorage
 - `did:aurora:` identifier scheme
+- Sign/verify messages
 
 ### 2. P2P Networking
-- libp2p with WebSocket/WebRTC transports
-- Circuit relay for NAT traversal (no open ports needed)
+- libp2p WebSocket/WebRTC transports
+- Circuit relay for NAT traversal
 - Kademlia DHT for peer discovery
 - Gossipsub for pub/sub messaging
+- No open ports required
 
 ### 3. Blockchain Integration
 - Model registry (on-chain)
 - Service offers and bids
 - Session tracking with SLOs
 - Automated settlements (payments, royalties, reputation)
+- Infrastructure tokenization (domains, DNS, portals, relays)
 
 ### 4. Model Management
-- Hash-based model identification (keccak256)
-- Verify model integrity
+- Hash-based model identification
+- Verify model integrity (keccak256)
 - Load models from IPFS/Arweave
-- Execute models with SLO tracking
+- Bootstrap with management models
+- Execute models locally or via P2P
 
 ### 5. Ethical Operating Principles
 - Collective well-being prioritized
 - Risk and compliance checks embedded
+- Aligned with Aurora's values
 - Intrinsic apoptosis if consensus fails
 
-## 🤝 Contributing
+## Building from Source
 
-Aurora Portal is open source (Apache 2.0 license) and welcomes contributions!
+### Prerequisites
 
-### How to contribute:
+- Rust (stable) - [Install](https://rustup.rs/)
+- wasm-pack - `cargo install wasm-pack`
+- Node.js (v18+) for testing
 
-1. **Infrastructure**: Run domains, DNS, portals, relays → earn tokens
-2. **Models**: Create, share, and improve AI models → earn royalties
-3. **Code**: Submit PRs to improve the portal and WASM client
-4. **Documentation**: Help others understand and use Aurora
-5. **Community**: Participate in governance and ethical discussions
+### Build WASM
 
-## 📚 Documentation
+```bash
+# Development build
+wasm-pack build --target web --dev
 
-### Core Docs
-- [Complete Specification](Docs/AuroraPortal.md) - Full Aurora Portal spec (v0.2)
-- [Trinity_3 Engine](Docs/trinity_3.md) - Ternary logic + fractal tensors (2,206 lines)
-- [WASM Client README](wasm-client/README.md) - Detailed WASM client docs
+# Production build (optimized)
+wasm-pack build --target web --release
+```
 
-### Project Planning
-- [Roadmap](ROADMAP.md) - 10-phase development plan (18 months)
-- [Execution Strategy](EXECUTION_STRATEGY.md) - 18-month plan with AI acceleration
-- [Why Aurora Will Succeed](WHY_AURORA_WILL_SUCCEED.md) - Historical comparison
-- [Contributing Guide](CONTRIBUTING.md) - How to contribute
+Output will be in `pkg/` directory:
+- `aurora_wasm_client_bg.wasm` - The compiled WASM module
+- `aurora_wasm_client.js` - JavaScript bindings
+- `aurora_wasm_client.d.ts` - TypeScript definitions
 
-### Quick References
-- [Quick Start](QUICKSTART.md) - 5-minute getting started guide
-- [Implementation Summary](IMPLEMENTATION_SUMMARY.md) - Technical overview
-- [Project Structure](STRUCTURE.md) - File organization
+### Build for Different Targets
 
-### External Links
-- [Aurora Program](https://www.auroraprogram.org) - Main website
-- [Community Foundation Articles](https://docs.auroraprogram.org) - Ethical principles
+```bash
+# For bundlers (webpack, rollup, vite)
+wasm-pack build --target bundler
 
-## 🔐 Security
+# For Node.js
+wasm-pack build --target nodejs
 
-- **Identity**: Private keys stored in LocalStorage (encrypt in production)
-- **Transport**: Use WSS (WebSocket Secure) for all P2P connections
-- **Model Verification**: Always verify model hash before execution
-- **CSP**: Configure Content Security Policy headers
+# For browser (no module)
+wasm-pack build --target no-modules
+```
 
-Report security vulnerabilities to: security@auroraprogram.org
+## Usage
 
-## 📄 License
+### JavaScript Integration
 
-Apache License 2.0
+```javascript
+import init, { create_agent, get_version } from './pkg/aurora_wasm_client.js';
 
-This license ensures that Aurora Portal is free to use, modify, and distribute, both in personal and commercial contexts, while preserving proper attribution to the community.
+async function main() {
+  // Initialize WASM module
+  await init();
 
-No single entity owns the network — it belongs to all who help it grow.
+  console.log('Aurora Client Version:', get_version());
 
-## 🌍 Community
+  // Create agent configuration
+  const config = {
+    relay_nodes: [
+      '/dns4/relay1.aurora.network/tcp/443/wss/p2p/12D3KooW...',
+      '/dns4/relay2.aurora.network/tcp/443/wss/p2p/12D3KooW...'
+    ],
+    blockchain_rpc: 'https://rpc.aurora.network',
+    bootstrap_models: [
+      '0xabcd1234...', // Discovery model
+      '0xef567890...', // Negotiation model
+      '0x12345678...'  // Security model
+    ],
+    user_did: null // Will be created if not exists
+  };
 
-- **Website**: [aurora program.org](https://www.auroraprogram.org)
-- **Portal**: [portal.auroraprogram.org](https://portal.auroraprogram.org)
-- **GitHub**: [github.com/Aurora-Program](https://github.com/Aurora-Program)
+  // Create Aurora agent
+  const agent = await create_agent(JSON.stringify(config));
+
+  // Start the agent
+  await agent.start();
+
+  console.log('Agent DID:', agent.get_did());
+  console.log('Connected peers:', agent.get_peer_count());
+
+  // Process a user prompt
+  const result = await agent.process_prompt('Find the best ML model for image classification');
+  console.log('Result:', result);
+
+  // Get agent state
+  const state = agent.get_state();
+  console.log('Agent state:', state);
+
+  // Shutdown
+  await agent.shutdown();
+}
+
+main().catch(console.error);
+```
+
+### TypeScript Integration
+
+```typescript
+import init, { AuroraAgent, create_agent, get_version } from './pkg/aurora_wasm_client';
+
+interface AgentConfig {
+  relay_nodes: string[];
+  blockchain_rpc: string;
+  bootstrap_models: string[];
+  user_did?: string;
+}
+
+async function initAurora(): Promise<AuroraAgent> {
+  await init();
+
+  const config: AgentConfig = {
+    relay_nodes: ['wss://relay.aurora.network'],
+    blockchain_rpc: 'https://rpc.aurora.network',
+    bootstrap_models: [],
+  };
+
+  return await create_agent(JSON.stringify(config));
+}
+```
+
+## Testing
+
+```bash
+# Run Rust tests
+cargo test
+
+# Run WASM tests in browser
+wasm-pack test --headless --firefox
+wasm-pack test --headless --chrome
+```
+
+## Project Structure
+
+```
+wasm-client/
+├── src/
+│   ├── lib.rs           # WASM entry point
+│   ├── agent.rs         # Aurora Agent implementation
+│   ├── p2p.rs           # P2P networking (libp2p)
+│   ├── blockchain.rs    # Blockchain interface
+│   ├── models.rs        # Model registry and management
+│   ├── crypto.rs        # Identity and cryptography
+│   └── storage.rs       # LocalStorage wrapper
+├── tests/
+│   └── integration.rs   # Integration tests
+├── Cargo.toml           # Rust dependencies
+├── README.md            # This file
+└── build.ps1            # Build script (PowerShell)
+```
+
+## Configuration
+
+### Relay Nodes
+Configure relay nodes for P2P connectivity. Example multiaddrs:
+```
+/dns4/relay1.aurora.network/tcp/443/wss/p2p/12D3KooWABC123...
+/ip4/192.168.1.100/tcp/9090/ws/p2p/12D3KooWDEF456...
+```
+
+### Blockchain RPC
+Point to Aurora's L2 blockchain or Ethereum:
+```
+https://rpc.aurora.network
+https://mainnet.infura.io/v3/YOUR_PROJECT_ID
+```
+
+### Bootstrap Models
+Provide model hashes for essential system models:
+- Discovery model: Find peers and services
+- Negotiation model: Bid/offer matching
+- Security model: Risk assessment
+- Routing model: Optimal path selection
+
+## Optimization
+
+The release build is highly optimized:
+- **Size optimization**: `opt-level = "z"`
+- **LTO**: Link-time optimization enabled
+- **Strip symbols**: Reduces binary size
+- **wasm-opt**: Further optimization with Binaryen
+
+Expected WASM size: ~200-500 KB (compressed: ~80-150 KB)
+
+## Security Considerations
+
+1. **Identity Protection**: Private keys stored in LocalStorage (encrypt in production)
+2. **Transport Security**: Use WSS (WebSocket Secure) for all P2P connections
+3. **Model Verification**: Always verify model hash before execution
+4. **Input Validation**: Sanitize all user inputs
+5. **CSP Headers**: Configure Content Security Policy for the portal
+
+## Deployment
+
+### To S3 + CloudFront (as designed in Infrastructure/main.yml)
+
+```bash
+# Build for production
+wasm-pack build --target web --release
+
+# Upload to S3
+aws s3 sync pkg/ s3://your-code-bucket/wasm/ --acl public-read
+
+# Invalidate CloudFront cache
+aws cloudfront create-invalidation --distribution-id YOUR_DIST_ID --paths "/wasm/*"
+```
+
+### Update index.html
+
+```html
+<script type="module">
+  import init from 'https://cdn.aurora.network/wasm/aurora_wasm_client.js';
+  await init();
+</script>
+```
+
+## Contributing
+
+See [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
+
+## License
+
+Apache License 2.0 - See [LICENSE](../LICENSE)
+
+## Resources
+
+- [Aurora Program](https://www.auroraprogram.org)
+- [Aurora Portal](https://portal.auroraprogram.org)
+- [Documentation](../Docs/AuroraPortal.md)
+- [libp2p](https://libp2p.io/)
+- [WebAssembly](https://webassembly.org/)
+- [Rust and WebAssembly](https://rustwasm.github.io/docs/book/)
 
 ---
 
-**Aurora Portal** - Where ethical intelligence meets decentralized collaboration.
-
-*"The agent is designed to reinforce and protect the stability of the network, placing collective well-being above its own operations."*
+**Aurora Portal** - Building the future through ethical intelligence.

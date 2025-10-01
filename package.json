@@ -1,0 +1,20 @@
+{
+  "name": "aurora-wasm-client",
+  "type": "module",
+  "collaborators": [
+    "Aurora Program <contact@auroraprogram.org>"
+  ],
+  "description": "Aurora Intelligence System - WASM client for P2P network interaction",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "files": [
+    "aurora_wasm_client_bg.wasm",
+    "aurora_wasm_client.js",
+    "aurora_wasm_client.d.ts"
+  ],
+  "main": "aurora_wasm_client.js",
+  "types": "aurora_wasm_client.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
