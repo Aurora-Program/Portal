@@ -74,6 +74,6 @@ lto = true          # Enable link-time optimization
 codegen-units = 1   # Better optimization
 panic = "abort"     # Smaller binary
 
-# Force all dependencies to use getrandom 0.2 with js feature for WASM compatibility
+# Force all dependencies to use specific getrandom version with js feature for WASM compatibility
 [patch.crates-io]
-getrandom = { version = "0.2", features = ["js"] }
+getrandom = { version = "=0.2.15", features = ["js"] }
