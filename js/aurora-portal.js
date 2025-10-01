@@ -282,32 +282,164 @@ function displayMessage(role, content) {
       // Export Identity button
       const btnExport = document.getElementById('btn-export-identity');
       if (btnExport) {
-        btnExport.addEventListener('click', () => {
+        btnExport.addEventListener('click', async () => {
           try {
+            // Ask for password to encrypt private key
+            const password = prompt(
+              '🔐 Set a password to encrypt your private key:\n\n' +
+              'This password will be required to restore your identity.\n' +
+              'Keep it safe - there is NO password recovery!'
+            );
+            
+            if (!password || password.length < 8) {
+              alert('❌ Password must be at least 8 characters!');
+              return;
+            }
+            
+            const confirmPassword = prompt('🔐 Confirm your password:');
+            if (password !== confirmPassword) {
+              alert('❌ Passwords do not match!');
+              return;
+            }
+            
+            btnExport.disabled = true;
+            btnExport.textContent = '🔐 Encrypting...';
+            
             const did = portal.agent.get_did();
             const publicKey = portal.agent.get_public_key();
+            const privateKeyJWK = localStorage.getItem('aurora_private_key_jwk');
+            
+            if (!privateKeyJWK) {
+              alert('❌ Private key not found in localStorage!');
+              return;
+            }
+            
+            // Encrypt private key with password (simple XOR for now, AES in Phase 1)
+            const encryptedPrivateKey = await encryptWithPassword(privateKeyJWK, password);
             
             const identity = {
-              version: '1.0',
+              version: '2.0',
+              type: 'full-backup',
               did: did,
               publicKey: JSON.parse(publicKey),
+              encryptedPrivateKey: encryptedPrivateKey,
               algorithm: 'ECDSA-P256',
+              encryption: 'PBKDF2-AES-GCM',
               created: new Date().toISOString(),
-              note: 'Private key remains in browser localStorage. This export contains only public information.'
+              warning: '⚠️ This file contains your encrypted private key. Keep it safe and NEVER share it!'
             };
             
             const blob = new Blob([JSON.stringify(identity, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `aurora-identity-${did.split(':').pop().substring(0, 8)}.json`;
+            a.download = `aurora-identity-backup-${did.split(':').pop().substring(0, 8)}.json`;
             a.click();
             URL.revokeObjectURL(url);
             
-            console.log('✅ Identity exported (public key only)');
+            console.log('✅ Full identity backup exported (encrypted)');
+            alert('✅ Identity backup saved!\n\n⚠️ IMPORTANT:\n• Store this file safely\n• Remember your password\n• Both are required to restore');
+            
           } catch (error) {
             console.error('Export failed:', error);
             alert('❌ Export failed: ' + error.message);
+          } finally {
+            btnExport.disabled = false;
+            btnExport.textContent = '📥 Export Identity';
+          }
+        });
+      }
+      
+      // Import Identity button
+      const btnImport = document.getElementById('btn-import-identity');
+      if (btnImport) {
+        btnImport.addEventListener('click', async () => {
+          try {
+            // Create file input
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'application/json,.json';
+            
+            input.onchange = async (e) => {
+              try {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                btnImport.disabled = true;
+                btnImport.textContent = '📂 Reading...';
+                
+                const text = await file.text();
+                const backup = JSON.parse(text);
+                
+                // Validate backup format
+                if (!backup.version || !backup.encryptedPrivateKey) {
+                  alert('❌ Invalid backup file format!\n\nThis doesn\'t appear to be an Aurora identity backup.');
+                  return;
+                }
+                
+                if (backup.version !== '2.0') {
+                  alert('❌ Incompatible backup version!\n\nThis backup was created with a different version.');
+                  return;
+                }
+                
+                // Ask for password
+                const password = prompt('🔐 Enter the password to decrypt your private key:');
+                if (!password) return;
+                
+                btnImport.textContent = '🔓 Decrypting...';
+                
+                // Decrypt private key
+                const privateKeyJWK = await decryptWithPassword(backup.encryptedPrivateKey, password);
+                
+                // Validate it's valid JSON
+                JSON.parse(privateKeyJWK);
+                
+                // Confirm before overwriting
+                const currentDID = localStorage.getItem('aurora_identity');
+                if (currentDID) {
+                  const confirm = window.confirm(
+                    '⚠️ You already have an identity!\n\n' +
+                    'Importing will REPLACE your current identity.\n\n' +
+                    'Current DID: ' + portal.agent.get_did().substring(0, 40) + '...\n' +
+                    'Backup DID: ' + backup.did.substring(0, 40) + '...\n\n' +
+                    'Continue?'
+                  );
+                  
+                  if (!confirm) return;
+                }
+                
+                btnImport.textContent = '💾 Restoring...';
+                
+                // Store decrypted keys
+                localStorage.setItem('aurora_private_key_jwk', privateKeyJWK);
+                localStorage.setItem('aurora_identity', JSON.stringify({
+                  did: backup.did,
+                  public_key_jwk: JSON.stringify(backup.publicKey)
+                }));
+                
+                console.log('✅ Identity restored from backup');
+                alert('✅ Identity Restored Successfully!\n\nDID: ' + backup.did + '\n\nPage will reload...');
+                
+                window.location.reload();
+                
+              } catch (error) {
+                console.error('Import failed:', error);
+                if (error.message.includes('Decryption failed')) {
+                  alert('❌ Wrong password or corrupted backup file!');
+                } else {
+                  alert('❌ Import failed: ' + error.message);
+                }
+              } finally {
+                btnImport.disabled = false;
+                btnImport.textContent = '📤 Import Backup';
+              }
+            };
+            
+            input.click();
+            
+          } catch (error) {
+            console.error('Import setup failed:', error);
+            alert('❌ Import failed: ' + error.message);
           }
         });
       }
@@ -344,6 +476,106 @@ function displayMessage(role, content) {
           }
         });
       }
+    }
+  }
+
+  /**
+   * Encrypt data with password using Web Crypto API
+   */
+  async function encryptWithPassword(data, password) {
+    // Derive key from password
+    const encoder = new TextEncoder();
+    const passwordData = encoder.encode(password);
+    
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      passwordData,
+      'PBKDF2',
+      false,
+      ['deriveKey']
+    );
+    
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const key = await crypto.subtle.deriveKey(
+      {
+        name: 'PBKDF2',
+        salt: salt,
+        iterations: 100000,
+        hash: 'SHA-256'
+      },
+      keyMaterial,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt']
+    );
+    
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const dataBuffer = encoder.encode(data);
+    
+    const encryptedBuffer = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv: iv },
+      key,
+      dataBuffer
+    );
+    
+    // Combine salt + iv + encrypted data
+    const result = new Uint8Array(salt.length + iv.length + encryptedBuffer.byteLength);
+    result.set(salt, 0);
+    result.set(iv, salt.length);
+    result.set(new Uint8Array(encryptedBuffer), salt.length + iv.length);
+    
+    // Return as base64
+    return btoa(String.fromCharCode(...result));
+  }
+  
+  /**
+   * Decrypt data with password
+   */
+  async function decryptWithPassword(encryptedData, password) {
+    try {
+      // Decode base64
+      const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
+      
+      const salt = combined.slice(0, 16);
+      const iv = combined.slice(16, 28);
+      const data = combined.slice(28);
+      
+      // Derive key from password
+      const encoder = new TextEncoder();
+      const passwordData = encoder.encode(password);
+      
+      const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        passwordData,
+        'PBKDF2',
+        false,
+        ['deriveKey']
+      );
+      
+      const key = await crypto.subtle.deriveKey(
+        {
+          name: 'PBKDF2',
+          salt: salt,
+          iterations: 100000,
+          hash: 'SHA-256'
+        },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['decrypt']
+      );
+      
+      const decryptedBuffer = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: iv },
+        key,
+        data
+      );
+      
+      const decoder = new TextDecoder();
+      return decoder.decode(decryptedBuffer);
+      
+    } catch (error) {
+      throw new Error('Decryption failed - wrong password or corrupted file');
     }
   }
 

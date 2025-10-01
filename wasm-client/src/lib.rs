@@ -8,6 +8,7 @@ mod models;
 mod crypto;
 mod storage;
 mod indexed_db;
+mod passkey;
 
 pub use agent::AuroraAgent;
 pub use p2p::P2PNetwork;

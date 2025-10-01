@@ -66,6 +66,25 @@
         <!-- Status indicator -->
         <div id="status" class="status info">Initializing Aurora Intelligence System...</div>
         
+        <!-- Identity type selector (shown on first load) -->
+        <div id="identity-selector" style="display:none; margin: 16px auto; padding: 20px; background: rgba(10, 199, 189, 0.05); border: 1px solid rgba(10, 199, 189, 0.2); border-radius: 8px; max-width: 600px;">
+          <div style="font-size: 16px; color: var(--text); font-weight: 600; margin-bottom: 12px; text-align: center;">
+            Choose Your Identity Method
+          </div>
+          <div style="display: grid; gap: 12px; margin-top: 16px;">
+            <button id="btn-use-passkey" style="padding: 16px; background: linear-gradient(135deg, #0dc7bd, #0aa2a7); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; text-align: left; transition: transform 0.2s;">
+              <div style="font-size: 24px; margin-bottom: 4px;">🔐</div>
+              <div style="font-weight: 700; margin-bottom: 4px;">Passkey (Recommended)</div>
+              <div style="font-size: 12px; opacity: 0.9;">Hardware-backed security. Stored in your system (Windows Hello, Touch ID, etc). Never lost, ultra secure.</div>
+            </button>
+            <button id="btn-use-localkey" style="padding: 16px; background: rgba(255,255,255,0.05); color: var(--text); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; text-align: left; transition: transform 0.2s;">
+              <div style="font-size: 24px; margin-bottom: 4px;">🔑</div>
+              <div style="font-weight: 700; margin-bottom: 4px;">Browser Storage (Simple)</div>
+              <div style="font-size: 12px; opacity: 0.7;">⚠️ Stored in browser only. Can be lost if you clear data. Good for testing.</div>
+            </button>
+          </div>
+        </div>
+        
         <!-- Identity panel -->
         <div id="identity-panel" style="display:none; margin: 16px auto; padding: 16px; background: rgba(10, 199, 189, 0.05); border: 1px solid rgba(10, 199, 189, 0.2); border-radius: 8px; max-width: 600px;">
           <div style="font-size: 14px; color: var(--accent); font-weight: 600; margin-bottom: 8px;">
@@ -90,7 +109,10 @@
               🖊️ Test Signature
             </button>
             <button id="btn-export-identity" style="padding: 8px 16px; background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; transition: transform 0.2s;">
-              📥 Export Identity
+              📥 Export Backup
+            </button>
+            <button id="btn-import-identity" style="padding: 8px 16px; background: rgba(10,199,189,0.2); color: var(--accent); border: 1px solid rgba(10,199,189,0.3); border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; transition: transform 0.2s;">
+              📤 Import Backup
             </button>
             <button id="btn-reset-identity" style="padding: 8px 16px; background: rgba(255,107,107,0.2); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.3); border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; transition: transform 0.2s;">
               🗑️ Reset

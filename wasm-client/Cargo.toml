@@ -50,6 +50,16 @@ web-sys = { version = "0.3", features = [
     "IdbRequest",
     "Event",
     "EventTarget",
+    # WebAuthn/Passkey support
+    "Navigator",
+    "CredentialsContainer",
+    "Credential",
+    "PublicKeyCredential",
+    "PublicKeyCredentialCreationOptions",
+    "PublicKeyCredentialRequestOptions",
+    "AuthenticatorAttestationResponse",
+    "AuthenticatorAssertionResponse",
+    "Location",
 ] }
 
 # P2P networking - DISABLED for now due to WASM compatibility issues

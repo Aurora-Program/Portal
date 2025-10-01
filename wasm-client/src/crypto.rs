@@ -10,8 +10,16 @@ use js_sys::{Object, Reflect, Uint8Array, Array};
 
 use crate::storage::LocalStorage;
 use crate::indexed_db::IndexedDB;
+use crate::passkey::PasskeyIdentity;
 
 const PRIVATE_KEY_ID: &str = "aurora_private_key";
+
+/// Identity type preference
+#[derive(Debug, Clone, Copy)]
+pub enum IdentityType {
+    Passkey,      // WebAuthn/Passkey (hardware-backed, secure)
+    LocalKey,     // ECDSA key in localStorage (simple but risky)
+}
 
 /// User identity (DID + Web Crypto keypair)
 #[derive(Clone)]
