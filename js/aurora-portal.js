@@ -10,7 +10,7 @@ import init, {
   get_version, 
   health_check,
   AuroraAgent 
-} from '../wasm-client/pkg/aurora_wasm_client.js';
+} from '/wasm-client/pkg/aurora_wasm_client.js';
 
 class AuroraPortal {
   constructor() {
