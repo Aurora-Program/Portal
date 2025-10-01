@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use crate::p2p::P2PNetwork;
 use crate::blockchain::BlockchainInterface;
 use crate::models::ModelRegistry;
-use crate::crypto::Identity;
+use crate::crypto::{Identity, IdentityType};
 use crate::storage::LocalStorage;
 
 /// Configuration for the Aurora Agent

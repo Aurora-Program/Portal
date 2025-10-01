@@ -31,24 +31,67 @@ pub struct Identity {
 
 impl Identity {
     /// Create a new identity or load from storage
+    /// Defaults to LocalKey if no type specified
     pub async fn new_or_load() -> Result<Self, String> {
+        Self::new_or_load_with_type(IdentityType::LocalKey).await
+    }
+
+    /// Create a new identity or load from storage with specified type
+    pub async fn new_or_load_with_type(identity_type: IdentityType) -> Result<Self, String> {
         let storage = LocalStorage::new()?;
 
-        // Try to load existing identity
+        // Check for passkey identity first
+        if let Ok(Some(_)) = storage.get("aurora_passkey_identity") {
+            log::info!("Found passkey identity, loading...");
+            return Self::load_passkey().await;
+        }
+
+        // Try to load existing local key identity
         if let Ok(Some(stored)) = storage.get("aurora_identity") {
             log::info!("Loading existing identity from storage...");
             return Self::from_stored(&stored).await;
         }
 
-        // Create new identity using Web Crypto API
-        log::info!("Creating new decentralized identity...");
-        let identity = Self::generate_new().await?;
-
-        // Store for future use
-        let serialized = identity.to_stored()?;
-        storage.set("aurora_identity", &serialized)?;
+        // Create new identity based on requested type
+        let identity = match identity_type {
+            IdentityType::Passkey => {
+                log::info!("Creating new passkey identity...");
+                Self::generate_passkey().await?
+            }
+            IdentityType::LocalKey => {
+                log::info!("Creating new local key identity...");
+                let id = Self::generate_new().await?;
+                
+                // Store for future use
+                let serialized = id.to_stored()?;
+                storage.set("aurora_identity", &serialized)?;
+                
+                id
+            }
+        };
 
         Ok(identity)
+    }
+    
+    /// Generate passkey-based identity
+    async fn generate_passkey() -> Result<Self, String> {
+        let passkey_identity = PasskeyIdentity::new_or_load().await?;
+        
+        // Convert to Identity format
+        Ok(Identity {
+            did: passkey_identity.did(),
+            public_key_jwk: format!("{{\"passkey\":true}}"), // Placeholder
+        })
+    }
+    
+    /// Load passkey-based identity
+    async fn load_passkey() -> Result<Self, String> {
+        let passkey_identity = PasskeyIdentity::new_or_load().await?;
+        
+        Ok(Identity {
+            did: passkey_identity.did(),
+            public_key_jwk: format!("{{\"passkey\":true}}"),
+        })
     }
 
     /// Generate a new ECDSA P-256 keypair using Web Crypto API

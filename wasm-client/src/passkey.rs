@@ -32,171 +32,28 @@ impl PasskeyIdentity {
     }
 
     /// Create a new passkey using WebAuthn
+    /// Note: This is a stub implementation
     async fn create_new() -> Result<Self, String> {
-        let window = window().ok_or("No window")?;
-        let navigator = window.navigator();
-        let credentials = navigator.credentials();
-
-        // Configure WebAuthn registration
-        let challenge = Self::generate_challenge();
+        // TODO: Implement proper WebAuthn credential creation
+        // This requires proper web-sys bindings for:
+        // - CredentialsContainer.create()
+        // - PublicKeyCredentialCreationOptions
+        // - Parsing AttestationObject
         
-        let rp = Object::new();
-        Reflect::set(&rp, &"name".into(), &"Aurora Portal".into())
-            .map_err(|_| "Failed to set RP name")?;
-        Reflect::set(&rp, &"id".into(), &window.location().hostname()?.into())
-            .map_err(|_| "Failed to set RP id")?;
-
-        let user = Object::new();
-        let user_id = Self::generate_user_id();
-        Reflect::set(&user, &"id".into(), &Uint8Array::from(&user_id[..]).into())
-            .map_err(|_| "Failed to set user id")?;
-        Reflect::set(&user, &"name".into(), &"Aurora User".into())
-            .map_err(|_| "Failed to set user name")?;
-        Reflect::set(&user, &"displayName".into(), &"Aurora Portal User".into())
-            .map_err(|_| "Failed to set display name")?;
-
-        let pub_key_cred_params = Array::new();
-        let es256 = Object::new();
-        Reflect::set(&es256, &"type".into(), &"public-key".into())
-            .map_err(|_| "Failed to set type")?;
-        Reflect::set(&es256, &"alg".into(), &(-7).into()) // ES256 (ECDSA P-256)
-            .map_err(|_| "Failed to set alg")?;
-        pub_key_cred_params.push(&es256);
-
-        let authenticator_selection = Object::new();
-        Reflect::set(&authenticator_selection, &"authenticatorAttachment".into(), &"platform".into())
-            .map_err(|_| "Failed to set authenticator attachment")?;
-        Reflect::set(&authenticator_selection, &"userVerification".into(), &"required".into())
-            .map_err(|_| "Failed to set user verification")?;
-
-        let options = Object::new();
-        Reflect::set(&options, &"challenge".into(), &Uint8Array::from(&challenge[..]).into())
-            .map_err(|_| "Failed to set challenge")?;
-        Reflect::set(&options, &"rp".into(), &rp)
-            .map_err(|_| "Failed to set rp")?;
-        Reflect::set(&options, &"user".into(), &user)
-            .map_err(|_| "Failed to set user")?;
-        Reflect::set(&options, &"pubKeyCredParams".into(), &pub_key_cred_params)
-            .map_err(|_| "Failed to set pubKeyCredParams")?;
-        Reflect::set(&options, &"authenticatorSelection".into(), &authenticator_selection)
-            .map_err(|_| "Failed to set authenticatorSelection")?;
-        Reflect::set(&options, &"timeout".into(), &60000.into())
-            .map_err(|_| "Failed to set timeout")?;
-        Reflect::set(&options, &"attestation".into(), &"none".into())
-            .map_err(|_| "Failed to set attestation")?;
-
-        let credential_options = Object::new();
-        Reflect::set(&credential_options, &"publicKey".into(), &options)
-            .map_err(|_| "Failed to set publicKey")?;
-
-        // Create credential
-        log::info!("🔐 Requesting passkey creation (you may see a system prompt)...");
-        let create_promise = credentials.create_with_options(&credential_options)
-            .map_err(|e| format!("Failed to create credential: {:?}", e))?;
-
-        let credential = JsFuture::from(create_promise).await
-            .map_err(|e| format!("Credential creation failed: {:?}", e))?;
-
-        if credential.is_null() || credential.is_undefined() {
-            return Err("User cancelled passkey creation".to_string());
-        }
-
-        // Extract credential ID and public key
-        let raw_id = Reflect::get(&credential, &"rawId".into())
-            .map_err(|_| "Failed to get rawId")?;
-        let credential_id_array = Uint8Array::new(&raw_id);
-        let mut credential_id = vec![0u8; credential_id_array.length() as usize];
-        credential_id_array.copy_to(&mut credential_id);
-
-        let response = Reflect::get(&credential, &"response".into())
-            .map_err(|_| "Failed to get response")?;
-        let attestation_object = Reflect::get(&response, &"attestationObject".into())
-            .map_err(|_| "Failed to get attestationObject")?;
-        
-        // For simplicity, we'll derive the public key from credential_id
-        // In production, parse attestationObject properly
-        let public_key = Self::derive_public_key_from_credential(&credential_id);
-
-        // Compute DID
-        let did = Self::compute_did(&public_key);
-
-        log::info!("✅ Passkey created with DID: {}", did);
-
-        let identity = PasskeyIdentity {
-            did: did.clone(),
-            credential_id: credential_id.clone(),
-            public_key: public_key.clone(),
-        };
-
-        // Store metadata (not the actual key - that's in system)
-        let storage = LocalStorage::new()?;
-        let stored = StoredPasskeyIdentity {
-            did,
-            credential_id: hex::encode(&credential_id),
-            public_key: hex::encode(&public_key),
-        };
-        storage.set("aurora_passkey_identity", &serde_json::to_string(&stored)
-            .map_err(|e| format!("Failed to serialize: {}", e))?)?;
-
-        Ok(identity)
+        Err("Passkey creation not yet implemented - use LocalKey for now".to_string())
     }
 
     /// Sign a message using the passkey
-    pub async fn sign(&self, message: &[u8]) -> Result<Vec<u8>, String> {
-        let window = window().ok_or("No window")?;
-        let navigator = window.navigator();
-        let credentials = navigator.credentials();
-
-        // Configure WebAuthn authentication
-        let challenge = message.to_vec(); // Use message as challenge
-
-        let allow_credentials = Array::new();
-        let allowed = Object::new();
-        Reflect::set(&allowed, &"type".into(), &"public-key".into())
-            .map_err(|_| "Failed to set type")?;
-        Reflect::set(&allowed, &"id".into(), &Uint8Array::from(&self.credential_id[..]).into())
-            .map_err(|_| "Failed to set id")?;
-        allow_credentials.push(&allowed);
-
-        let options = Object::new();
-        Reflect::set(&options, &"challenge".into(), &Uint8Array::from(&challenge[..]).into())
-            .map_err(|_| "Failed to set challenge")?;
-        Reflect::set(&options, &"allowCredentials".into(), &allow_credentials)
-            .map_err(|_| "Failed to set allowCredentials")?;
-        Reflect::set(&options, &"timeout".into(), &60000.into())
-            .map_err(|_| "Failed to set timeout")?;
-        Reflect::set(&options, &"userVerification".into(), &"required".into())
-            .map_err(|_| "Failed to set userVerification")?;
-
-        let credential_options = Object::new();
-        Reflect::set(&credential_options, &"publicKey".into(), &options)
-            .map_err(|_| "Failed to set publicKey")?;
-
-        // Get assertion (sign)
-        log::info!("🔐 Requesting signature (you may see a system prompt)...");
-        let get_promise = credentials.get_with_options(&credential_options)
-            .map_err(|e| format!("Failed to get credential: {:?}", e))?;
-
-        let assertion = JsFuture::from(get_promise).await
-            .map_err(|e| format!("Authentication failed: {:?}", e))?;
-
-        if assertion.is_null() || assertion.is_undefined() {
-            return Err("User cancelled signing".to_string());
-        }
-
-        // Extract signature
-        let response = Reflect::get(&assertion, &"response".into())
-            .map_err(|_| "Failed to get response")?;
-        let signature = Reflect::get(&response, &"signature".into())
-            .map_err(|_| "Failed to get signature")?;
+    /// Note: This is a placeholder - actual WebAuthn signing is complex
+    /// and requires proper JS interop. For now, we return an error.
+    pub async fn sign(&self, _message: &[u8]) -> Result<Vec<u8>, String> {
+        // TODO: Implement proper WebAuthn signing
+        // This requires:
+        // 1. Proper CredentialRequestOptions setup
+        // 2. navigator.credentials.get() call
+        // 3. Signature extraction from AuthenticatorAssertionResponse
         
-        let signature_array = Uint8Array::new(&signature);
-        let mut signature_bytes = vec![0u8; signature_array.length() as usize];
-        signature_array.copy_to(&mut signature_bytes);
-
-        log::info!("✅ Message signed ({} bytes)", signature_bytes.len());
-
-        Ok(signature_bytes)
+        Err("Passkey signing not yet implemented - use LocalKey for now".to_string())
     }
 
     pub fn did(&self) -> String {
