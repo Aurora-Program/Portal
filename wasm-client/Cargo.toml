@@ -15,11 +15,21 @@ wasm-bindgen-futures = "0.4"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde-wasm-bindgen = "0.6"
-console_error_panic_hook = "0.1"
+console_error_panic_hook = { version = "0.1", optional = true }
 js-sys = "0.3"
 
 # getrandom with wasm support - force version and features for all dependencies
 getrandom = { version = "0.2", features = ["js"] }
+
+# Async runtime for WASM
+futures = "0.3"
+
+# Cryptography
+sha2 = "0.10"
+
+# Logging
+log = "0.4"
+wasm-logger = "0.2"
 
 # Web APIs
 web-sys = { version = "0.3", features = [
@@ -60,7 +70,17 @@ web-sys = { version = "0.3", features = [
     "AuthenticatorAttestationResponse",
     "AuthenticatorAssertionResponse",
     "Location",
+    # Fetch API for Discovery Server
+    "Request",
+    "RequestInit",
+    "RequestMode",
+    "Response",
+    "Headers",
 ] }
+
+[features]
+default = []
+console_error_panic_hook = ["dep:console_error_panic_hook"]
 
 # P2P networking - DISABLED for now due to WASM compatibility issues
 # Will implement using WebSocket directly in Phase 1
@@ -75,18 +95,6 @@ web-sys = { version = "0.3", features = [
 #     "wasm-bindgen",
 # ] }
 
-# Async runtime for WASM
-futures = "0.3"
-
-# Cryptography
-sha2 = "0.10"
-# ed25519-dalek = "2.0"  # Temporarily disabled - uses getrandom 0.3
-# rand = "0.8"  # Temporarily disabled - uses getrandom 0.3
-
-# Logging
-log = "0.4"
-wasm-logger = "0.2"
-
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
 
@@ -95,7 +103,3 @@ opt-level = "z"     # Optimize for size
 lto = true          # Enable link-time optimization
 codegen-units = 1   # Better optimization
 panic = "abort"     # Smaller binary
-
-# Configure build target for WASM
-[target.wasm32-unknown-unknown.dependencies]
-getrandom = { version = "0.2", features = ["js"] }

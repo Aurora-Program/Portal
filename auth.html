@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Aurora Portal - Choose Your Path</title>
+    <meta name="description" content="Aurora Portal - Choose between Web2 or Web3 authentication">
+    <style>
+      :root{
+        --bg1:#03151a;
+        --bg2:#062e33;
+        --panel:#0e1b20cc;
+        --accent:#0dc7bd;
+        --text:#e7f7f6;
+        --muted:#b9d8d6;
+        --web2:#10dbcf;
+        --web3:#7c3aed;
+      }
+      body{
+        margin:0; 
+        font-family:Inter,Segoe UI,Roboto,Arial,Helvetica,sans-serif; 
+        color:var(--text);
+        min-height:100vh; 
+        display:grid; 
+        place-items:center; 
+        overflow-x:hidden;
+        background: radial-gradient(80vmax 80vmax at 10% 10%, #0a3a42 0%, transparent 60%),
+                    radial-gradient(70vmax 70vmax at 90% 90%, #0b5a57 0%, transparent 55%),
+                    linear-gradient(160deg, var(--bg1), var(--bg2));
+      }
+      .orbs::before, .orbs::after{
+        content:""; 
+        position:absolute; 
+        border-radius:50%; 
+        filter:blur(60px); 
+        opacity:.2; 
+        pointer-events:none;
+        animation: float 20s ease-in-out infinite;
+      }
+      .orbs::before{ 
+        width:500px; 
+        height:500px; 
+        background:#10dbcff0; 
+        left:-150px; 
+        top:-150px; 
+      }
+      .orbs::after{ 
+        width:600px; 
+        height:600px; 
+        background:#7c3aedcc; 
+        right:-200px; 
+        bottom:-200px;
+        animation-delay: -10s;
+      }
+      @keyframes float{
+        0%, 100%{ transform: translate(0, 0); }
+        25%{ transform: translate(30px, 30px); }
+        50%{ transform: translate(-20px, 40px); }
+        75%{ transform: translate(20px, -30px); }
+      }
+      .wrap{ 
+        position:relative; 
+        width:min(1100px,92vw); 
+        padding:32px; 
+      }
+      .header{
+        text-align:center; 
+        margin-bottom:40px;
+      }
+      img.logo{ 
+        max-width:240px; 
+        height:auto; 
+        display:block; 
+        margin:0 auto 20px; 
+        filter: drop-shadow(0 8px 24px rgba(0,0,0,.4));
+        animation: fadeIn 0.6s ease-out;
+      }
+      @keyframes fadeIn{
+        from{ opacity:0; transform: translateY(-20px); }
+        to{ opacity:1; transform: translateY(0); }
+      }
+      h1{ 
+        margin:0; 
+        font-size:48px; 
+        letter-spacing:.5px; 
+        color:var(--text);
+        background: linear-gradient(135deg, var(--accent) 0%, #10db9f 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: fadeIn 0.6s ease-out 0.2s both;
+      }
+      p.subtitle{ 
+        margin:16px 0 0; 
+        font-size:20px; 
+        color:var(--muted);
+        animation: fadeIn 0.6s ease-out 0.4s both;
+      }
+      .divider{ 
+        width:100px; 
+        height:3px; 
+        margin:24px auto; 
+        background:linear-gradient(90deg, transparent, var(--accent), transparent); 
+        opacity:.8;
+        animation: fadeIn 0.6s ease-out 0.6s both;
+      }
+      
+      .choice-grid{
+        display:grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap:32px;
+        margin-top:48px;
+        animation: fadeIn 0.8s ease-out 0.8s both;
+      }
+      
+      .choice-card{
+        position:relative;
+        padding:40px 32px;
+        background:linear-gradient(180deg, #102329dd, #0b1a1fee);
+        border:2px solid rgba(255,255,255,.06);
+        border-radius:20px;
+        box-shadow:0 20px 70px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.08);
+        backdrop-filter: blur(12px);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor:pointer;
+        overflow:hidden;
+      }
+      
+      .choice-card::before{
+        content:"";
+        position:absolute;
+        top:0;
+        left:0;
+        right:0;
+        height:4px;
+        opacity:0;
+        transition: opacity 0.4s;
+      }
+      
+      .choice-card.web2::before{
+        background: linear-gradient(90deg, var(--web2), #10db9f);
+      }
+      
+      .choice-card.web3::before{
+        background: linear-gradient(90deg, var(--web3), #a78bfa);
+      }
+      
+      .choice-card:hover{
+        transform: translateY(-8px) scale(1.02);
+        border-color: rgba(255,255,255,.15);
+        box-shadow:0 28px 90px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.12);
+      }
+      
+      .choice-card:hover::before{
+        opacity:1;
+      }
+      
+      .choice-card.web2:hover{
+        background:linear-gradient(180deg, rgba(16,219,207,0.08), #0b1a1fee);
+        border-color: rgba(16,219,207,0.3);
+      }
+      
+      .choice-card.web3:hover{
+        background:linear-gradient(180deg, rgba(124,58,237,0.08), #0b1a1fee);
+        border-color: rgba(124,58,237,0.3);
+      }
+      
+      .icon{
+        font-size:64px;
+        margin-bottom:20px;
+        display:block;
+        transition: transform 0.4s;
+      }
+      
+      .choice-card:hover .icon{
+        transform: scale(1.1) rotate(5deg);
+      }
+      
+      .choice-title{
+        font-size:28px;
+        font-weight:700;
+        margin:0 0 12px;
+        color:var(--text);
+      }
+      
+      .choice-card.web2 .choice-title{
+        color:var(--web2);
+      }
+      
+      .choice-card.web3 .choice-title{
+        color:var(--web3);
+      }
+      
+      .choice-desc{
+        font-size:15px;
+        line-height:1.7;
+        color:var(--muted);
+        margin:0 0 24px;
+      }
+      
+      .features{
+        list-style:none;
+        padding:0;
+        margin:20px 0;
+        text-align:left;
+      }
+      
+      .features li{
+        padding:10px 0;
+        font-size:14px;
+        color:var(--muted);
+        display:flex;
+        align-items:center;
+        gap:10px;
+      }
+      
+      .features li::before{
+        content:"✓";
+        font-weight:bold;
+        color:var(--accent);
+        font-size:18px;
+      }
+      
+      .choice-card.web3 .features li::before{
+        color:var(--web3);
+      }
+      
+      .cta-button{
+        display:inline-block;
+        padding:14px 32px;
+        margin-top:16px;
+        border-radius:10px;
+        font-weight:700;
+        font-size:15px;
+        border:none;
+        cursor:pointer;
+        transition: all 0.3s;
+        text-decoration:none;
+        width:100%;
+        box-sizing:border-box;
+      }
+      
+      .choice-card.web2 .cta-button{
+        background: linear-gradient(135deg, var(--web2), #10db9f);
+        color: var(--bg1);
+        box-shadow: 0 6px 20px rgba(16,219,207,0.3);
+      }
+      
+      .choice-card.web2 .cta-button:hover{
+        box-shadow: 0 8px 28px rgba(16,219,207,0.5);
+        transform: translateY(-2px);
+      }
+      
+      .choice-card.web3 .cta-button{
+        background: linear-gradient(135deg, var(--web3), #a78bfa);
+        color: white;
+        box-shadow: 0 6px 20px rgba(124,58,237,0.3);
+      }
+      
+      .choice-card.web3 .cta-button:hover{
+        box-shadow: 0 8px 28px rgba(124,58,237,0.5);
+        transform: translateY(-2px);
+      }
+      
+      .badge{
+        display:inline-block;
+        padding:6px 14px;
+        border-radius:20px;
+        font-size:11px;
+        font-weight:700;
+        text-transform:uppercase;
+        letter-spacing:0.5px;
+        margin-bottom:16px;
+      }
+      
+      .badge.recommended{
+        background: rgba(16,219,207,0.15);
+        color: var(--web2);
+        border: 1px solid rgba(16,219,207,0.3);
+      }
+      
+      .badge.advanced{
+        background: rgba(124,58,237,0.15);
+        color: var(--web3);
+        border: 1px solid rgba(124,58,237,0.3);
+      }
+      
+      footer{ 
+        margin-top:60px; 
+        font-size:13px; 
+        color:#9ec1be; 
+        opacity:.7;
+        text-align:center;
+      }
+      
+      @media(max-width:768px){
+        h1{ font-size:36px; }
+        p.subtitle{ font-size:16px; }
+        .choice-grid{ grid-template-columns: 1fr; gap:24px; }
+        .choice-card{ padding:32px 24px; }
+        .icon{ font-size:52px; }
+        .choice-title{ font-size:24px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap orbs">
+      <div class="header">
+        <img class="logo" src="assets/aurora-portal-logo.png" alt="Aurora Portal" />
+        <h1>Welcome to Aurora Portal</h1>
+        <p class="subtitle">Choose your authentication path</p>
+        <div class="divider"></div>
+      </div>
+      
+      <div class="choice-grid">
+        <!-- Web2 Card -->
+        <div class="choice-card web2" onclick="goToWeb2()">
+          <span class="badge recommended">Recommended</span>
+          <span class="icon">🐹</span>
+          <h2 class="choice-title">Web2 Mode</h2>
+          <p class="choice-desc">
+            Aurora P2P Network with WASM-powered agents. Decentralized intelligence without blockchain complexity.
+          </p>
+          <ul class="features">
+            <li>Instant setup, no wallets needed</li>
+            <li>P2P Discovery Server</li>
+            <li>Aurora Trinity-3 Intelligence</li>
+            <li>Fractal Tensors in browser</li>
+            <li>Perfect for development & testing</li>
+          </ul>
+          <button class="cta-button">
+            🚀 Launch Aurora P2P
+          </button>
+        </div>
+        
+        <!-- Web3 Card -->
+        <div class="choice-card web3" onclick="goToWeb3()">
+          <span class="badge advanced">Advanced</span>
+          <span class="icon">🔐</span>
+          <h2 class="choice-title">Web3 Mode</h2>
+          <p class="choice-desc">
+            Decentralized Identity with Passkeys. Hardware-backed security meets blockchain authentication.
+          </p>
+          <ul class="features">
+            <li>Passkey authentication (Windows Hello, Touch ID)</li>
+            <li>Hardware security module</li>
+            <li>DID standard compliant</li>
+            <li>Export/import backups</li>
+            <li>Future blockchain integration</li>
+          </ul>
+          <button class="cta-button">
+            🔑 Enter with Passkey
+          </button>
+        </div>
+      </div>
+      
+      <footer>
+        © <span id="year"></span> Aurora Program | Building the future through ethical intelligence
+      </footer>
+    </div>
+    
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+      
+      function goToWeb2() {
+        // Smooth transition
+        document.body.style.opacity = '0';
+        document.body.style.transition = 'opacity 0.5s';
+        setTimeout(() => {
+          window.location.href = 'wasm-client/pkg/aurora-p2p-demo.html';
+        }, 500);
+      }
+      
+      function goToWeb3() {
+        // Smooth transition
+        document.body.style.opacity = '0';
+        document.body.style.transition = 'opacity 0.5s';
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 500);
+      }
+      
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === '1') goToWeb2();
+        if (e.key === '2') goToWeb3();
+      });
+      
+      // Add hover sound effect (optional)
+      document.querySelectorAll('.choice-card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+          // Optional: Add subtle UI feedback
+          card.style.zIndex = '10';
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.zIndex = '1';
+        });
+      });
+    </script>
+  </body>
+</html>

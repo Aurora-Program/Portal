@@ -1,0 +1,7 @@
+# Aurora P2P Client Dependencies
+
+# HTTP client for Discovery Server
+requests>=2.31.0
+
+# ML for Reputation System
+numpy>=1.24.0

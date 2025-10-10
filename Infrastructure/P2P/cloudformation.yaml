@@ -1,0 +1,474 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Aurora P2P Discovery Server - Serverless Infrastructure'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Deployment environment
+  
+  PeerTTLMinutes:
+    Type: Number
+    Default: 5
+    Description: Time-to-live for peer registration (minutes)
+  
+  EnableCORS:
+    Type: String
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Description: Enable CORS for API Gateway
+
+Resources:
+  # ============================================================================
+  # DynamoDB Table for Peer Registry
+  # ============================================================================
+  
+  PeerRegistryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'aurora-peers-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: peer_id
+          AttributeType: S
+        - AttributeName: last_seen
+          AttributeType: S
+      KeySchema:
+        - AttributeName: peer_id
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      GlobalSecondaryIndexes:
+        - IndexName: LastSeenIndex
+          KeySchema:
+            - AttributeName: last_seen
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Project
+          Value: Aurora
+        - Key: Component
+          Value: P2P-Discovery
+        - Key: Environment
+          Value: !Ref Environment
+
+  # ============================================================================
+  # Lambda Execution Role
+  # ============================================================================
+  
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'aurora-p2p-lambda-role-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Scan
+                  - dynamodb:Query
+                Resource:
+                  - !GetAtt PeerRegistryTable.Arn
+                  - !Sub '${PeerRegistryTable.Arn}/index/*'
+
+  # ============================================================================
+  # Lambda Function - Discovery Server
+  # ============================================================================
+  
+  DiscoveryServerFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'aurora-discovery-${Environment}'
+      Runtime: python3.11
+      Handler: lambda_handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref PeerRegistryTable
+          TTL_MINUTES: !Ref PeerTTLMinutes
+          ENVIRONMENT: !Ref Environment
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+          import os
+          from datetime import datetime, timedelta
+          from decimal import Decimal
+
+          dynamodb = boto3.resource('dynamodb')
+          table_name = os.environ['TABLE_NAME']
+          ttl_minutes = int(os.environ.get('TTL_MINUTES', 5))
+          table = dynamodb.Table(table_name)
+
+          class DecimalEncoder(json.JSONEncoder):
+              def default(self, obj):
+                  if isinstance(obj, Decimal):
+                      return int(obj)
+                  return super(DecimalEncoder, self).default(obj)
+
+          def lambda_handler(event, context):
+              """Aurora P2P Discovery Server - Main Handler"""
+              
+              # CORS headers
+              headers = {
+                  'Content-Type': 'application/json',
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key',
+                  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS'
+              }
+              
+              # Handle OPTIONS for CORS
+              if event.get('httpMethod') == 'OPTIONS':
+                  return {'statusCode': 200, 'headers': headers, 'body': ''}
+              
+              # Route request
+              path = event.get('path', '')
+              method = event.get('httpMethod', '')
+              
+              try:
+                  if path == '/register' and method == 'POST':
+                      response = register_peer(event)
+                  elif path == '/discover' and method == 'GET':
+                      response = discover_peers(event)
+                  elif path == '/heartbeat' and method == 'POST':
+                      response = heartbeat(event)
+                  elif path == '/health' and method == 'GET':
+                      response = {'statusCode': 200, 'body': json.dumps({'status': 'healthy'})}
+                  else:
+                      response = {
+                          'statusCode': 404,
+                          'body': json.dumps({'error': 'Not found'})
+                      }
+              except Exception as e:
+                  response = {
+                      'statusCode': 500,
+                      'body': json.dumps({'error': str(e)})
+                  }
+              
+              response['headers'] = headers
+              return response
+
+          def register_peer(event):
+              """Register new peer in the network"""
+              body = json.loads(event['body'])
+              
+              peer_id = body['peer_id']
+              now = datetime.now()
+              ttl_time = now + timedelta(minutes=ttl_minutes)
+              
+              peer_data = {
+                  'peer_id': peer_id,
+                  'address': body.get('address', ''),
+                  'port': int(body.get('port', 0)),
+                  'archetypes': body.get('archetypes', []),
+                  'last_seen': now.isoformat(),
+                  'ttl': int(ttl_time.timestamp()),
+                  'metadata': body.get('metadata', {})
+              }
+              
+              table.put_item(Item=peer_data)
+              
+              return {
+                  'statusCode': 200,
+                  'body': json.dumps({
+                      'message': 'Peer registered successfully',
+                      'peer_id': peer_id,
+                      'ttl_expires': ttl_time.isoformat()
+                  })
+              }
+
+          def discover_peers(event):
+              """Discover active peers in the network"""
+              params = event.get('queryStringParameters') or {}
+              archetype_filter = params.get('archetype')
+              include_reputation = params.get('reputation', 'false').lower() == 'true'
+              
+              # Scan for all peers
+              response = table.scan()
+              peers = response.get('Items', [])
+              
+              # Filter by archetype if specified
+              if archetype_filter:
+                  peers = [
+                      p for p in peers 
+                      if archetype_filter in p.get('archetypes', [])
+                  ]
+              
+              # Filter only active peers (within TTL)
+              now = datetime.now()
+              active_peers = []
+              for peer in peers:
+                  last_seen = datetime.fromisoformat(peer['last_seen'])
+                  age_seconds = (now - last_seen).total_seconds()
+                  if age_seconds < (ttl_minutes * 60):
+                      # Add basic reputation hint if enabled
+                      if include_reputation:
+                          peer['reputation_hint'] = calculate_simple_reputation(peer)
+                      active_peers.append(peer)
+              
+              return {
+                  'statusCode': 200,
+                  'body': json.dumps({
+                      'peers': active_peers,
+                      'count': len(active_peers),
+                      'timestamp': now.isoformat(),
+                      'reputation_enabled': include_reputation
+                  }, cls=DecimalEncoder)
+              }
+
+          def calculate_simple_reputation(peer):
+              """
+              Calcula una reputación simple basada en metadata del peer.
+              La reputación completa con ML se hace client-side.
+              """
+              metadata = peer.get('metadata', {})
+              
+              # Factor de edad (peers antiguos más confiables)
+              registration_time = peer.get('first_seen', peer.get('last_seen'))
+              if registration_time:
+                  age_hours = (datetime.now() - datetime.fromisoformat(registration_time)).total_seconds() / 3600
+                  age_factor = min(1.0, age_hours / 168)  # Máximo confianza en 1 semana
+              else:
+                  age_factor = 0.0
+              
+              # Reportes negativos (si existen)
+              reports_count = int(metadata.get('negative_reports', 0))
+              report_penalty = max(0.0, 1.0 - (reports_count * 0.2))
+              
+              # Score simple
+              score = 0.5 + (age_factor * 0.3) * report_penalty
+              
+              return {
+                  'score': round(score, 2),
+                  'age_hours': round(age_hours, 1) if 'registration_time' in locals() else 0,
+                  'is_new': age_factor < 0.3,
+                  'note': 'Simple hint - full reputation calculated client-side'
+              }
+
+          def heartbeat(event):
+              """Update peer's last_seen timestamp"""
+              body = json.loads(event['body'])
+              peer_id = body['peer_id']
+              
+              now = datetime.now()
+              ttl_time = now + timedelta(minutes=ttl_minutes)
+              
+              table.update_item(
+                  Key={'peer_id': peer_id},
+                  UpdateExpression='SET last_seen = :ts, #ttl = :ttl',
+                  ExpressionAttributeNames={'#ttl': 'ttl'},
+                  ExpressionAttributeValues={
+                      ':ts': now.isoformat(),
+                      ':ttl': int(ttl_time.timestamp())
+                  }
+              )
+              
+              return {
+                  'statusCode': 200,
+                  'body': json.dumps({
+                      'message': 'Heartbeat updated',
+                      'peer_id': peer_id,
+                      'timestamp': now.isoformat()
+                  })
+              }
+      Tags:
+        - Key: Project
+          Value: Aurora
+        - Key: Component
+          Value: P2P-Discovery
+        - Key: Environment
+          Value: !Ref Environment
+
+  # ============================================================================
+  # API Gateway REST API
+  # ============================================================================
+  
+  DiscoveryAPI:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub 'aurora-p2p-api-${Environment}'
+      Description: Aurora P2P Discovery API
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  # API Resources
+  RegisterResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref DiscoveryAPI
+      ParentId: !GetAtt DiscoveryAPI.RootResourceId
+      PathPart: register
+
+  DiscoverResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref DiscoveryAPI
+      ParentId: !GetAtt DiscoveryAPI.RootResourceId
+      PathPart: discover
+
+  HeartbeatResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref DiscoveryAPI
+      ParentId: !GetAtt DiscoveryAPI.RootResourceId
+      PathPart: heartbeat
+
+  HealthResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref DiscoveryAPI
+      ParentId: !GetAtt DiscoveryAPI.RootResourceId
+      PathPart: health
+
+  # API Methods
+  RegisterMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref DiscoveryAPI
+      ResourceId: !Ref RegisterResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DiscoveryServerFunction.Arn}/invocations'
+
+  DiscoverMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref DiscoveryAPI
+      ResourceId: !Ref DiscoverResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DiscoveryServerFunction.Arn}/invocations'
+
+  HeartbeatMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref DiscoveryAPI
+      ResourceId: !Ref HeartbeatResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DiscoveryServerFunction.Arn}/invocations'
+
+  HealthMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref DiscoveryAPI
+      ResourceId: !Ref HealthResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DiscoveryServerFunction.Arn}/invocations'
+
+  # Lambda Permission for API Gateway
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DiscoveryServerFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${DiscoveryAPI}/*'
+
+  # API Deployment
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - RegisterMethod
+      - DiscoverMethod
+      - HeartbeatMethod
+      - HealthMethod
+    Properties:
+      RestApiId: !Ref DiscoveryAPI
+
+  ApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: !Ref Environment
+      RestApiId: !Ref DiscoveryAPI
+      DeploymentId: !Ref ApiDeployment
+      TracingEnabled: false
+      # Logging disabled to avoid CloudWatch Logs role requirement
+      # To enable: configure CloudWatch role in API Gateway account settings first
+
+  # ============================================================================
+  # CloudWatch Log Groups
+  # ============================================================================
+  
+  LambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/aurora-discovery-${Environment}'
+      RetentionInDays: 7
+  
+  # ApiLogGroup removed - requires CloudWatch Logs role in account settings
+  # Lambda logs still work without the account-level role
+
+# ============================================================================
+# Outputs
+# ============================================================================
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${DiscoveryAPI}.execute-api.${AWS::Region}.amazonaws.com/${Environment}'
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiEndpoint'
+
+  RegisterEndpoint:
+    Description: Peer registration endpoint
+    Value: !Sub 'https://${DiscoveryAPI}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/register'
+
+  DiscoverEndpoint:
+    Description: Peer discovery endpoint
+    Value: !Sub 'https://${DiscoveryAPI}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/discover'
+
+  HeartbeatEndpoint:
+    Description: Heartbeat endpoint
+    Value: !Sub 'https://${DiscoveryAPI}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/heartbeat'
+
+  TableName:
+    Description: DynamoDB table name
+    Value: !Ref PeerRegistryTable
+    Export:
+      Name: !Sub '${AWS::StackName}-TableName'
+
+  LambdaFunctionArn:
+    Description: Lambda function ARN
+    Value: !GetAtt DiscoveryServerFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-LambdaArn'
