@@ -1197,19 +1197,38 @@ class TensorPoolManager:
 # ===============================================================================
 
 def apply_ethical_constraint(vector, space_id, kb):
-    """Apply ethical constraints to vector."""
+    """Apply ethical constraints via XOR with rules (Aurora triadic logic)."""
     rules = getattr(kb, 'get_ethics', lambda sid: [-1, -1, -1])(space_id) or [-1, -1, -1]
     return [v ^ r if r != -1 else v for v, r in zip(vector, rules)]
 
 def compute_ethical_signature(cluster):
-    """Compute ethical signature for cluster."""
-    base = str([t.nivel_3[0] for t in cluster]).encode()
-    return hashlib.sha256(base).hexdigest()
+    """Compute ethical signature via SHA256 (fractal hash)."""
+    return hashlib.sha256(str([t.nivel_3[0] for t in cluster]).encode()).hexdigest()
 
 def golden_ratio_select(N, seed):
-    """Select indices using golden ratio stepping."""
-    step = int(max(1, round(N * PHI)))
-    return [(seed + i * step) % N for i in range(3)]
+    """Select indices using golden ratio stepping (PHI-based fractal)."""
+    return [(seed + i * int(max(1, round(N * PHI)))) % N for i in range(3)]
+
+def _create_tensor(i, input_data, space_id, kb, entropy_seed):
+    """Atomic tensor creation with ethical constraints (recursive base case)."""
+    if input_data and i < len(input_data):
+        vec = apply_ethical_constraint(input_data[i], space_id, kb)
+        tensor = FractalTensor(nivel_3=[vec])
+    else:
+        tensor = FractalTensor.random(space_constraints=space_id) if hasattr(FractalTensor.random, '__code__') and 'space_constraints' in FractalTensor.random.__code__.co_varnames else FractalTensor.random()
+    
+    tensor.metadata.update({
+        "ethical_hash": compute_ethical_signature([tensor]),
+        "entropy_seed": entropy_seed,
+        "space_id": space_id
+    })
+    return tensor
+
+def _harmonize_tensor(tensor, armonizador, space_id):
+    """Atomic harmonization (recursive base case)."""
+    harmonized = armonizador.harmonize(tensor.nivel_3[0], space_id=space_id)
+    tensor.nivel_3[0] = harmonized["output"]
+    return tensor
 
 def pattern0_create_fractal_cluster(
     *,
@@ -1220,39 +1239,28 @@ def pattern0_create_fractal_cluster(
     entropy_seed=PHI,
     depth_max=3,
 ):
-    """Generate ethical fractal cluster using Pattern 0."""
+    """Generate ethical fractal cluster using Pattern 0 (recursive/fractal approach)."""
     random.seed(int(entropy_seed * 1e9))
-    kb = FractalKnowledgeBase()
-    armonizador = Armonizador(knowledge_base=kb)
-    pool = TensorPoolManager()
-
-    # Generate tensors
-    tensors = []
-    for i in range(num_tensors):
-        if input_data and i < len(input_data):
-            vec = apply_ethical_constraint(input_data[i], space_id, kb)
-            tensor = FractalTensor(nivel_3=[vec])
-        else:
-            try:
-                tensor = FractalTensor.random(space_constraints=space_id)
-            except TypeError:
-                tensor = FractalTensor.random()
-        
-        # Add ethical metadata
-        tensor.metadata.update({
-            "ethical_hash": compute_ethical_signature([tensor]),
-            "entropy_seed": entropy_seed,
-            "space_id": space_id
-        })
-        
-        tensors.append(tensor)
-        pool.add_tensor(tensor)
-
-    # Harmonize cluster
+    
+    # Context initialization (reusable fractal components)
+    kb = context.get('kb') if context and 'kb' in context else FractalKnowledgeBase()
+    armonizador = context.get('armonizador') if context and 'armonizador' in context else Armonizador(knowledge_base=kb)
+    pool = context.get('pool') if context and 'pool' in context else TensorPoolManager()
+    
+    # Recursive tensor generation + harmonization (single pass, fractal pipeline)
+    tensors = [
+        _harmonize_tensor(
+            _create_tensor(i, input_data, space_id, kb, entropy_seed),
+            armonizador,
+            space_id
+        )
+        for i in range(num_tensors)
+    ]
+    
+    # Pool management (side effect isolation)
     for tensor in tensors:
-        harmonized = armonizador.harmonize(tensor.nivel_3[0], space_id=space_id)
-        tensor.nivel_3[0] = harmonized["output"]
-
+        pool.add_tensor(tensor)
+    
     return tensors
 
 # ===============================================================================

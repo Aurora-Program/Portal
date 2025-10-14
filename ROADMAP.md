@@ -173,10 +173,217 @@
 
 ---
 
-### Phase 6.5: Trinity_3 Integration 🔮 **NEW**
-**Timeline**: Weeks 25-32 (April-May 2026)  
-**Goal**: Integrate Trinity_3 Python implementation as advanced model tier  
-**🎯 CRITICAL ADVANTAGE**: We already have complete Trinity_3 implementation!
+### Phase 6.5: Genesis L3 Integration 🧬 **NEW - CRITICAL**
+**Timeline**: Weeks 25-38 (April-June 2026)  
+**Goal**: Integrate Genesis as Intelligence Engine in Layer 3  
+**🎯 GAME-CHANGER**: Genesis v0.3.1 enables Proof of Intelligence + Intrinsic Apoptosis!
+
+#### What We Already Have ✅
+- [x] Genesis v0.3.1 fully operational (19/19 tests passing)
+- [x] Trigate: Ms/Ss encoding with O(1) LUT operations
+- [x] Transcender: Synthesis with MetaM generation
+- [x] FFEStore: Universal archetypes catalog
+- [x] FractalAttention: Coherence-driven context management
+- [x] Coherence metrics: C_meta, C_ext, C_dyn
+- [x] Intrinsic Apoptosis: Ethical halt mechanism
+- [x] Complete Python implementation ready for WASM port
+
+#### � WHY THIS IS CRITICAL
+Genesis enables:
+- ✅ **Consensus by Intelligence** (not just PoW/PoS)
+- ✅ **K-of-M Validation** with coherence verification
+- ✅ **P2P Intelligence Mesh** with semantic archetypal discovery
+- ✅ **Intrinsic Apoptosis** (network halts if C_meta < 0.70)
+- ✅ **On-chain Model Registry** (hash verification)
+- ✅ **Royalties by Synthesis** (contributors tracked via MetaM)
+
+#### Phase 6.5a: Genesis Core en L3 (Weeks 25-26)
+**Goal**: Compile Genesis to WASM and integrate with Aurora Agent
+
+**Tasks:**
+- [ ] Week 25 (Days 1-3): Compile Genesis to WASM
+  - Configure Cargo.toml for wasm32-unknown-unknown
+  - Create wasm_bindings.rs with JsValue interfaces
+  - Generate bindings: genesis_core.wasm → genesis_core.js
+  - Optimize WASM size (target < 5MB with wasm-opt)
+  
+- [ ] Week 25 (Days 4-5): Generate Genesis Model ID
+  - Serialize ModelPack (genesis_core + trigate_luts + transcender_config + ffe_catalog)
+  - Compute Keccak256 hash → model_id (0x...)
+  - Upload ModelPack to IPFS → CID
+  - Document in MODEL_REGISTRY.md
+
+- [ ] Week 26 (Days 1-2): Deploy AuroraRegistry Smart Contract
+  - Create AuroraRegistry.sol (model registration)
+  - Deploy to testnet (Sepolia/Mumbai)
+  - Register Genesis model_id on-chain
+  - Verify registration with Web3 calls
+
+- [ ] Week 26 (Days 3-5): Integrate Genesis in WASM Client
+  - Create genesis.rs in wasm-client/src/
+  - Add init_genesis() to AuroraAgentImpl
+  - Update aurora-chat.html with Genesis UI panel
+  - Show coherence metrics (C_meta, C_ext, C_dyn) in real-time
+
+**Milestones:**
+- [ ] Genesis WASM binary < 5MB ✅
+- [ ] Model ID registered on-chain ✅
+- [ ] process_turn() returns valid coherence ✅
+- [ ] UI shows coherence panel ✅
+
+**Deliverables:**
+- `wasm-client/pkg/genesis/genesis_core_bg.wasm`
+- `contracts/AuroraRegistry.sol` (deployed)
+- MODEL_REGISTRY.md with model_id
+- UI coherence panel in aurora-chat.html
+
+---
+
+#### Phase 6.5b: P2P Intelligence Mesh (Weeks 27-29)
+**Goal**: Enable semantic discovery and negotiation between IEs
+
+**Tasks:**
+- [ ] Week 27: Extend Discovery Server with Archetypal Filters
+  - Add `archetype`, `model_id`, `coherence_avg` to DynamoDB schema
+  - Create ArchetypeIndex and ModelIndex (GSIs)
+  - Extend `/discover` endpoint: filter by archetype + model_id + min_coherence
+  - Update registerPeer() to include Genesis metadata
+
+- [ ] Week 28: Implement P2P Negotiation Protocol
+  - Define intelligence_offer/intelligence_response message types
+  - Implement SLO negotiation (latency_ms, coherence_min, accuracy_min)
+  - Add stake mechanism (TRI tokens)
+  - Timeout + fallback logic
+  - Reputation tracking by coherence delivery
+
+- [ ] Week 29: FractalAttention Distribuido
+  - Port FractalAttention to Rust/WASM
+  - Implement synthesis of multiple IE outputs
+  - Archetypal match scoring (cosine similarity on Ms/Ss)
+  - Replicate universal archetypes across peers (FFE catalog sync)
+  - Cache distributed archetypal queries
+
+**Milestones:**
+- [ ] Discovery filters by archetype ✅
+- [ ] P2P negotiation succeeds > 80% ✅
+- [ ] FractalAttention synthesizes N IEs ✅
+
+**Deliverables:**
+- Extended Discovery API with archetypal filters
+- P2P negotiation protocol (WebRTC messages)
+- `fractal_attention.rs` in WASM client
+
+---
+
+#### Phase 6.5c: Proof of Intelligence (Weeks 30-33)
+**Goal**: K-of-M validation with Intrinsic Apoptosis
+
+**Tasks:**
+- [ ] Week 30: Implement ProofOfIntelligence.sol
+  - Define Proposal struct (model_id, tensor_id, synthesis_hash, C_meta, C_ext, C_dyn)
+  - submitProposal() function (requires C_meta >= 0.90)
+  - validateProposal() function (K-of-M voting)
+  - Rewards distribution for validators
+  
+- [ ] Week 31: K-of-M Validator Selection
+  - Random validator selection (M=10)
+  - Validators re-execute Genesis locally
+  - Compare synthesis_hash with proposal
+  - Vote if coherence matches (tolerance: ±2%)
+  - Slash stake if vote is malicious
+
+- [ ] Week 32: Intrinsic Apoptosis Mechanism
+  - Monitor systemic coherence (avg C_meta over last 100 blocks)
+  - Trigger halt if avg_coherence < 0.70 (30% threshold)
+  - Emit ApoptosisTriggered event
+  - Notify Ethici (L7) for emergency assembly
+  - Document recovery process (retrain Genesis + update Foundation Articles)
+
+- [ ] Week 33: Dashboard Observabilidad Ética
+  - Create L5 metrics endpoint (/metrics/genesis)
+  - Real-time coherence graphs (Grafana)
+  - Alerts for coherence degradation (< 0.80 warning, < 0.70 critical)
+  - Export Prometheus metrics
+  - Public dashboard at portal.auroraprogram.org/metrics
+
+**Milestones:**
+- [ ] K-of-M consensus reached (K=7 of M=10) ✅
+- [ ] Apoptosis triggers correctly ✅
+- [ ] Dashboard shows real-time coherence ✅
+
+**Deliverables:**
+- `ProofOfIntelligence.sol` (deployed)
+- Intrinsic Apoptosis monitor (24/7)
+- Public dashboard with Grafana
+
+---
+
+#### Phase 6.5d: Real Economy Services (Weeks 34-38)
+**Goal**: L5 services powered by Genesis collaborative intelligence
+
+**Services to Implement:**
+
+1. **Medical Diagnosis Collaborative** (Week 34-35)
+   - API endpoint: `/services/medical/diagnose`
+   - Input: symptoms, patient history
+   - Genesis processes with space_id="medicina_general"
+   - If coherence < 0.85 → discover specialized IEs (diagnostico_respiratorio, etc.)
+   - FractalAttention synthesizes multiple IE outputs
+   - Return: diagnosis + confidence + coherence attestation
+   - On-chain settlement with royalties (5% Genesis author, 10% specialist IE)
+
+2. **Route Optimization** (Week 36)
+   - API endpoint: `/services/logistics/optimize`
+   - Input: origin, destinations, constraints (emissions, cost, time)
+   - Discover IEs: route_optimizer, emissions_calculator, labor_auditor
+   - Each IE processes with Genesis → generates tensor
+   - Transcender synthesizes trio (route + emissions + labor validation)
+   - Return: optimal route with C_meta >= 0.92
+
+3. **Energy Distribution** (Week 37)
+   - API endpoint: `/services/energy/distribute`
+   - Collaborative load balancing with ethical priorities
+   - Genesis ensures sustainability > profit
+
+4. **Education Personalization** (Week 38)
+   - API endpoint: `/services/education/personalize`
+   - Adaptive learning paths with coherence tracking
+
+**Milestones:**
+- [ ] 4 services operational ✅
+- [ ] Avg coherence across services > 0.88 ✅
+- [ ] Royalties distributed correctly ✅
+
+**Deliverables:**
+- 4 L5 service endpoints (Unified API)
+- L6 marketplace integration (Real Economy)
+- SDK for developers (service creation guide)
+
+---
+
+#### Phase 6.5 Summary: By Numbers
+
+| Metric | Target | Current |
+|--------|--------|---------|
+| **Genesis IEs Active** | 100+ | 0 |
+| **Avg Coherence** | > 0.85 | - |
+| **Synthesis/Day** | 1000+ | 0 |
+| **K-of-M Consensus** | > 95% | - |
+| **Apoptosis Triggers** | 0 | 0 |
+| **L5 Services** | 4 | 0 |
+| **Royalties Distributed** | $1000+/month | $0 |
+
+**Total Duration**: 14 weeks (25-38)  
+**Phases**: 4 (Core, Mesh, PoI, Services)  
+**Hitos**: 24  
+**Smart Contracts**: 2 (AuroraRegistry, ProofOfIntelligence)  
+
+---
+
+### Phase 6.6: Trinity_3 Integration 🔮 **COMPLEMENTARY**
+**Timeline**: Weeks 39-46 (July-August 2026)  
+**Goal**: Integrate Trinity_3 as advanced model tier (complementary to Genesis)  
+**Note**: Trinity_3 can use Genesis as inference engine!
 
 #### What We Already Have ✅
 - [x] Complete Python implementation (1,200+ lines)
@@ -190,11 +397,11 @@
 - [x] Pattern 0 ethical cluster generation
 
 #### Integration Tasks (Accelerated with existing code)
-- [ ] Week 25: Port Trinity_3 to Rust/WASM (Copilot assists)
+- [ ] Week 39: Port Trinity_3 to Rust/WASM (Copilot assists)
   - Core: Trigate, TernaryLogic (2-3 days)
   - FractalTensor structure (2 days)
   - LUT generation (1 day)
-- [ ] Week 26: Implement FractalKnowledgeBase in Rust
+- [ ] Week 40: Implement FractalKnowledgeBase in Rust
   - Storage layer (2 days)
   - Coherence validation (2 days)
   - Multi-universe support (1 day)
