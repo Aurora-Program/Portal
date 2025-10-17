@@ -588,6 +588,21 @@ class EvolverFuncional:
         
         return resultados
     
+    def aprender_tensor(self, tensor: TensorFFE) -> Tuple[Arquetipo, 'EvolverFuncional']:
+        """
+        Aprende desde un tensor y retorna arquetipo + nueva instancia (inmutable)
+        
+        Retorna: (arquetipo, evolver_actualizado)
+        """
+        arq, nuevo_state = aprender_tensor_puro(tensor, self.state)
+        
+        # Crear nueva instancia con estado actualizado
+        evolver_nuevo = EvolverFuncional()
+        evolver_nuevo.state = nuevo_state
+        evolver_nuevo.transcender = self.transcender
+        
+        return arq, evolver_nuevo
+    
     def aprender_secuencia(self, secuencia: List[TensorFFE]) -> Optional[Dinamica]:
         """Aprende dinámica desde secuencia temporal"""
         dinamica, nuevo_state = aprender_secuencia_puro(secuencia, self.state)
