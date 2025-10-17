@@ -1,0 +1,141 @@
+{
+  "tarea_1_ciclo": [
+    {
+      "original": "recursion",
+      "reconstruido": "fonetico",
+      "coherencia": 0.5,
+      "exacto": false
+    },
+    {
+      "original": "emergencia",
+      "reconstruido": "lexico",
+      "coherencia": 0.5,
+      "exacto": false
+    },
+    {
+      "original": "forma",
+      "reconstruido": "<desconocido>",
+      "coherencia": 0.5,
+      "exacto": false
+    },
+    {
+      "original": "orden",
+      "reconstruido": "emergencia",
+      "coherencia": 0.5,
+      "exacto": false
+    },
+    {
+      "original": "transcender",
+      "reconstruido": "transcender",
+      "coherencia": 0.5,
+      "exacto": true
+    }
+  ],
+  "tarea_2_emergencia": [
+    {
+      "triada_original": [
+        "recursion",
+        "nivel",
+        "jerarquia"
+      ],
+      "score_emergencia": 0.49970863205449834,
+      "texto_desplegado": "fonetico lexico lexico",
+      "coherencia_despliegue": 0.5163492063492062
+    },
+    {
+      "triada_original": [
+        "forma",
+        "funcion",
+        "estructura"
+      ],
+      "score_emergencia": 0.5029164273390389,
+      "texto_desplegado": "<desconocido> transcender lexico",
+      "coherencia_despliegue": 0.4261904761904762
+    },
+    {
+      "triada_original": [
+        "emergencia",
+        "sintesis",
+        "transcender"
+      ],
+      "score_emergencia": 0.5346631946189653,
+      "texto_desplegado": "emergencia emergencia emergencia",
+      "coherencia_despliegue": 0.5293650793650794
+    }
+  ],
+  "tarea_3_navegacion": [
+    {
+      "palabra_nueva": "concepto",
+      "arquetipo": "ARQ_0004",
+      "vecinos_arquetipo": [
+        "transcender"
+      ],
+      "desplegado": "emergencia",
+      "coherencia": 0.5
+    },
+    {
+      "palabra_nueva": "patron",
+      "arquetipo": "ARQ_0003",
+      "vecinos_arquetipo": [
+        "emergencia",
+        "novedad",
+        "estructura"
+      ],
+      "desplegado": "emergencia",
+      "coherencia": 0.5
+    },
+    {
+      "palabra_nueva": "crear",
+      "arquetipo": "ARQ_0008",
+      "vecinos_arquetipo": [],
+      "desplegado": "<desconocido>",
+      "coherencia": 0.5
+    },
+    {
+      "palabra_nueva": "sistema",
+      "arquetipo": "ARQ_0008",
+      "vecinos_arquetipo": [],
+      "desplegado": "<desconocido>",
+      "coherencia": 0.5
+    }
+  ],
+  "tarea_4_rotacion": [
+    {
+      "iteracion": 1,
+      "expresion": "transcender",
+      "coherencia": 0.5,
+      "paso_fibonacci": 7
+    },
+    {
+      "iteracion": 2,
+      "expresion": "lexico",
+      "coherencia": 0.5,
+      "paso_fibonacci": 8
+    },
+    {
+      "iteracion": 3,
+      "expresion": "lexico",
+      "coherencia": 0.5,
+      "paso_fibonacci": 9
+    },
+    {
+      "iteracion": 4,
+      "expresion": "transcender",
+      "coherencia": 0.5,
+      "paso_fibonacci": 10
+    },
+    {
+      "iteracion": 5,
+      "expresion": "lexico",
+      "coherencia": 0.5,
+      "paso_fibonacci": 11
+    }
+  ],
+  "metricas": {
+    "reconstrucciones_exactas": 1,
+    "coherencia_promedio_ciclo": 0.5,
+    "coherencia_promedio_emergencia": 0.4906349206349206,
+    "expresiones_unicas": 2,
+    "palabras_nuevas_desplegadas": 4
+  }
+}

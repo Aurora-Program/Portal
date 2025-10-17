@@ -1,0 +1,41 @@
+{
+  "total_arquetipos": 4,
+  "palabras_por_arquetipo": {
+    "ARQ_0001": [
+      "fonetico",
+      "semantico",
+      "teorico",
+      "recursion",
+      "nivel",
+      "sintesis",
+      "funcion",
+      "orden",
+      "primero",
+      "tercero"
+    ],
+    "ARQ_0002": [
+      "lexico",
+      "fractal",
+      "jerarquia",
+      "forma",
+      "tensor",
+      "segundo"
+    ],
+    "ARQ_0003": [
+      "emergencia",
+      "novedad",
+      "estructura"
+    ],
+    "ARQ_0004": [
+      "transcender"
+    ]
+  },
+  "arquetipos_por_nivel": {
+    "0": [
+      "ARQ_0001",
+      "ARQ_0002",
+      "ARQ_0003",
+      "ARQ_0004"
+    ]
+  }
+}

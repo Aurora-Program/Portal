@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurora Intelligence Explorer 🌌</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #f5f7fa;
+            --bg-darker: #ffffff;
+            --panel-bg: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(16, 220, 207, 0.3);
+            --accent: #10dcbd;
+            --accent-glow: rgba(16, 220, 207, 0.4);
+            --text-primary: #1a2332;
+            --text-secondary: #5a6c7d;
+            --success: #10db9f;
+            --warning: #ffa500;
+            --error: #ff6b6b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f5f7fa 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            background: rgba(16, 220, 189, 0.1);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--accent);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(0.9); }
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            min-height: calc(100vh - 100px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Input Section */
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            background: rgba(16, 220, 207, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.7rem;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(16, 220, 207, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(135deg, var(--accent) 0%, #0aa2a7 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(16, 220, 207, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(16, 220, 207, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: rgba(16, 220, 207, 0.08);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Deduction Visualizer */
+        .deduction-visualizer {
+            min-height: 300px;
+        }
+
+        .tensor-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .tensor-box {
+            background: rgba(16, 220, 207, 0.05);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            min-width: 200px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .tensor-box:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 30px rgba(16, 220, 207, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .tensor-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tensor-values {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .tensor-value {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(16, 220, 207, 0.1);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--accent);
+            transition: all 0.3s ease;
+        }
+
+        .tensor-value.null {
+            color: var(--warning);
+            border-color: var(--warning);
+            animation: blink 1.5s ease-in-out infinite;
+        }
+
+        .tensor-value.resolved {
+            color: var(--success);
+            border-color: var(--success);
+            animation: resolve 0.5s ease-out;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes resolve {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Fractal Levels */
+        .fractal-level {
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: rgba(16, 220, 207, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }
+
+        .level-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .level-badge {
+            background: linear-gradient(135deg, var(--accent) 0%, #0aa2a7 100%);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .level-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Nivel 1: 3 valores octales grandes */
+        .tensor-values-level1 {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        .tensor-value-octal {
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(16, 220, 207, 0.1) 0%, rgba(10, 162, 167, 0.1) 100%);
+            border: 3px solid var(--accent);
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tensor-value-octal:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(16, 220, 207, 0.4);
+        }
+
+        .tensor-value-octal::after {
+            content: attr(data-binary);
+            position: absolute;
+            bottom: -20px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        /* Nivel 2: Grid 3x3 */
+        .tensor-grid-3x3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.8rem;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .tensor-value-small {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(16, 220, 207, 0.1);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent);
+            transition: all 0.3s ease;
+        }
+
+        .tensor-value-small:hover {
+            transform: scale(1.15);
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(16, 220, 207, 0.3);
+        }
+
+        /* Nivel 3: Grid 27 valores (9x3) */
+        .tensor-grid-27 {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 0.5rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .tensor-value-tiny {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(16, 220, 207, 0.08);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .tensor-value-tiny:hover {
+            transform: scale(1.2);
+            border-color: var(--accent);
+            color: var(--accent);
+            z-index: 10;
+        }
+
+        .tensor-value-tiny.null {
+            color: var(--warning);
+            border-color: var(--warning);
+            animation: blink 1.5s ease-in-out infinite;
+        }
+
+        .tensor-value-tiny.resolved {
+            color: var(--success);
+            border-color: var(--success);
+            background: rgba(16, 219, 159, 0.1);
+        }
+
+        /* KB Explorer */
+        .kb-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .kb-item {
+            background: rgba(16, 220, 207, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .kb-item:hover {
+            background: rgba(16, 220, 207, 0.05);
+            border-color: var(--accent);
+            transform: translateX(5px);
+        }
+
+        .kb-space {
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .kb-pattern {
+            font-family: 'Courier New', monospace;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Log */
+        .log-container {
+            background: rgba(16, 220, 207, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding: 0.3rem;
+            border-left: 3px solid transparent;
+            padding-left: 0.8rem;
+        }
+
+        .log-entry.info { border-left-color: var(--accent); color: var(--text-secondary); }
+        .log-entry.success { border-left-color: var(--success); color: var(--success); }
+        .log-entry.error { border-left-color: var(--error); color: var(--error); }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(16, 220, 207, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0aa2a7;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .tensor-display {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">
+                🌌 Aurora Intelligence Explorer
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span id="connection-status">Connecting...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Input Panel -->
+            <div class="panel">
+                <div class="panel-title">🔍 Query Aurora</div>
+                
+                <div class="input-group">
+                    <label>Octal Pattern (0-7, use "null" for unknown)</label>
+                    <input type="text" id="pattern-input" placeholder="3,null,5" value="5,null,2">
+                </div>
+
+                <div class="input-group">
+                    <label>Logical Space</label>
+                    <input type="text" id="space-input" placeholder="default" value="default">
+                </div>
+
+                <button class="btn" onclick="queryAurora()">
+                    🧠 Deduce Pattern
+                </button>
+
+                <div style="height: 1rem;"></div>
+
+                <button class="btn btn-secondary" onclick="learnPattern()">
+                    📚 Learn Current Pattern
+                </button>
+            </div>
+
+            <!-- Stats Panel -->
+            <div class="panel">
+                <div class="panel-title">📊 System Stats</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-universes">0</div>
+                        <div class="stat-label">Universes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-archetypes">0</div>
+                        <div class="stat-label">Archetypes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-queries">0</div>
+                        <div class="stat-label">Queries</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-coherence">0.00</div>
+                        <div class="stat-label">Coherence</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Deduction Visualizer -->
+            <div class="panel deduction-visualizer">
+                <div class="panel-title">🔮 Fractal Tensor Reconstruction</div>
+                
+                <!-- Nivel 1: Base (3 valores) -->
+                <div class="fractal-level">
+                    <div class="level-header">
+                        <span class="level-badge">Nivel 1</span>
+                        <span class="level-desc">Base Ternaria (3 valores: 0-7)</span>
+                    </div>
+                    <div class="tensor-values-level1" id="nivel-1">
+                        <div class="tensor-value-octal">?</div>
+                        <div class="tensor-value-octal">?</div>
+                        <div class="tensor-value-octal">?</div>
+                    </div>
+                </div>
+
+                <!-- Nivel 2: Derivados (9 valores) -->
+                <div class="fractal-level">
+                    <div class="level-header">
+                        <span class="level-badge">Nivel 2</span>
+                        <span class="level-desc">Derivados por XOR (9 valores: 0-7)</span>
+                    </div>
+                    <div class="tensor-grid-3x3" id="nivel-2">
+                        <div class="tensor-value-small">?</div>
+                        <div class="tensor-value-small">?</div>
+                        <div class="tensor-value-small">?</div>
+                        <div class="tensor-value-small">?</div>
+                        <div class="tensor-value-small">?</div>
+                        <div class="tensor-value-small">?</div>
+                        <div class="tensor-value-small">?</div>
+                        <div class="tensor-value-small">?</div>
+                        <div class="tensor-value-small">?</div>
+                    </div>
+                </div>
+
+                <!-- Nivel 3: Fractal completo (27 valores) -->
+                <div class="fractal-level">
+                    <div class="level-header">
+                        <span class="level-badge">Nivel 3</span>
+                        <span class="level-desc">Fractal Recursivo (27 valores: 0-7)</span>
+                    </div>
+                    <div class="tensor-grid-27" id="nivel-3">
+                        <!-- 27 valores generados dinámicamente -->
+                    </div>
+                </div>
+
+                <div style="text-align: center; color: var(--text-secondary); margin-top: 1rem;" id="deduction-info">
+                    🧬 Estructura Fractal: 3 → 9 → 27 valores octales (0-7)
+                </div>
+            </div>
+
+            <!-- KB Explorer -->
+            <div class="panel">
+                <div class="panel-title">📚 Knowledge Base Explorer</div>
+                <div class="kb-list" id="kb-list">
+                    <div style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+                        No patterns learned yet. Start by learning some patterns!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Log -->
+            <div class="panel">
+                <div class="panel-title">📜 Activity Log</div>
+                <div class="log-container" id="log-container">
+                    <div class="log-entry info">System initialized. Waiting for commands...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE = 'http://localhost:8080/api/v1';
+        let authToken = null;
+        let queryCount = 0;
+
+        // Initialize
+        async function init() {
+            log('Initializing Aurora Intelligence Explorer...', 'info');
+            await authenticate();
+            await updateStats();
+            await loadKnowledgeBase();
+            log('✅ System ready!', 'success');
+        }
+
+        // Authentication
+        async function authenticate() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        public_key: 'explorer_user_' + Date.now(),
+                        peer_signature: 'explorer_sig',
+                        peer_id: 'explorer_peer'
+                    })
+                });
+
+                const data = await response.json();
+                authToken = data.token;
+                
+                document.getElementById('connection-status').textContent = 'Connected';
+                log('🔐 Authenticated successfully', 'success');
+            } catch (error) {
+                document.getElementById('connection-status').textContent = 'Disconnected';
+                log('❌ Authentication failed: ' + error.message, 'error');
+            }
+        }
+
+        // Query Aurora
+        async function queryAurora() {
+            const patternStr = document.getElementById('pattern-input').value;
+            const spaceId = document.getElementById('space-input').value || 'default';
+
+            // Parse pattern - acepta valores 0-7 (octal)
+            const pattern = patternStr.split(',').map(v => {
+                v = v.trim().toLowerCase();
+                if (v === 'null' || v === 'none' || v === '?') return null;
+                const num = parseInt(v);
+                if (num < 0 || num > 7) {
+                    log(`⚠️ Valor ${num} fuera de rango. Usa 0-7`, 'error');
+                    return null;
+                }
+                return num;
+            });
+
+            // Validate
+            if (pattern.length !== 3) {
+                log('❌ Pattern must have exactly 3 values (0-7 or null)', 'error');
+                return;
+            }
+
+            log(`🔍 Querying pattern ${JSON.stringify(pattern)} in space "${spaceId}"...`, 'info');
+
+            try {
+                const response = await fetch(`${API_BASE}/aurora/extend`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        input_ss: pattern,
+                        space_id: spaceId
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.reconstructed_tensor) {
+                    // Mostrar los 3 niveles fractales
+                    displayFractalTensor(result.reconstructed_tensor, pattern);
+                    
+                    const nullsResolved = pattern.filter(v => v === null).length;
+                    log(`✅ Tensor reconstruido! ${nullsResolved} NULLs resueltos`, 'success');
+                    
+                    document.getElementById('deduction-info').innerHTML = 
+                        `🧬 <strong>Método:</strong> ${result.reconstruction_method || 'Recursión Fractal'} | ` +
+                        `<strong>NULLs:</strong> ${nullsResolved} | ` +
+                        `<strong>Coherencia:</strong> ${(result.coherence || 1.0).toFixed(3)}`;
+                } else {
+                    log('⚠️ No result from Aurora', 'error');
+                }
+
+                queryCount++;
+                await updateStats();
+
+            } catch (error) {
+                log('❌ Query failed: ' + error.message, 'error');
+            }
+        }
+
+        // Learn Pattern
+        async function learnPattern() {
+            const patternStr = document.getElementById('pattern-input').value;
+            const spaceId = document.getElementById('space-input').value || 'default';
+
+            const pattern = patternStr.split(',').map(v => {
+                v = v.trim().toLowerCase();
+                if (v === 'null' || v === 'none' || v === '?') return 0; // Learn only complete patterns
+                return parseInt(v);
+            });
+
+            if (pattern.some(v => isNaN(v))) {
+                log('❌ Cannot learn patterns with NULLs. Replace NULLs with 0 or 1.', 'error');
+                return;
+            }
+
+            log(`📚 Learning pattern ${JSON.stringify(pattern)} in space "${spaceId}"...`, 'info');
+
+            try {
+                // For now, we'll use a mock learning endpoint
+                // In production, this would call the actual Aurora API
+                log(`✅ Pattern learned successfully!`, 'success');
+                
+                await loadKnowledgeBase();
+                await updateStats();
+
+            } catch (error) {
+                log('❌ Learning failed: ' + error.message, 'error');
+            }
+        }
+
+        // Display Fractal Tensor (3 niveles jerárquicos)
+        function displayFractalTensor(tensor, originalPattern) {
+            // Nivel 1: Base (3 valores octales 0-7)
+            const nivel1 = tensor.nivel_1 || tensor.nivel_3?.slice(0, 3) || [0, 0, 0];
+            const nivel1Container = document.getElementById('nivel-1');
+            nivel1Container.innerHTML = nivel1.map((v, i) => {
+                const wasNull = originalPattern && originalPattern[i] === null;
+                const cssClass = wasNull ? 'resolved' : '';
+                const binary = v.toString(2).padStart(3, '0');
+                return `<div class="tensor-value-octal ${cssClass}" data-binary="${binary}" title="Binario: ${binary}">${v}</div>`;
+            }).join('');
+
+            // Nivel 2: Derivados (9 valores por XOR)
+            const nivel2 = tensor.nivel_2 || generateNivel2(nivel1);
+            const nivel2Container = document.getElementById('nivel-2');
+            nivel2Container.innerHTML = nivel2.map((v, i) => {
+                return `<div class="tensor-value-small" title="Posición ${i}">${v}</div>`;
+            }).join('');
+
+            // Nivel 3: Fractal completo (27 valores)
+            const nivel3 = tensor.nivel_3 || generateNivel3(nivel1, nivel2);
+            const nivel3Container = document.getElementById('nivel-3');
+            nivel3Container.innerHTML = '';
+            
+            // Generar los 27 valores en grupos de 9
+            for (let i = 0; i < 27; i++) {
+                const value = nivel3[i] || 0;
+                const div = document.createElement('div');
+                div.className = 'tensor-value-tiny';
+                div.textContent = value;
+                div.title = `Nivel 3[${i}] = ${value}`;
+                nivel3Container.appendChild(div);
+            }
+        }
+
+        // Generar Nivel 2 por XOR (operación ternaria)
+        function generateNivel2(nivel1) {
+            const [a, b, c] = nivel1;
+            return [
+                a ^ b, b ^ c, c ^ a,  // Primera fila
+                a ^ c, b ^ a, c ^ b,  // Segunda fila
+                (a ^ b) ^ c, (b ^ c) ^ a, (c ^ a) ^ b  // Tercera fila
+            ];
+        }
+
+        // Generar Nivel 3 recursivamente
+        function generateNivel3(nivel1, nivel2) {
+            const result = [];
+            // Combinar nivel1 (3) + nivel2 (9) + derivados recursivos (15)
+            result.push(...nivel1);
+            result.push(...nivel2);
+            
+            // Generar 15 valores adicionales por recursión
+            for (let i = 0; i < 15; i++) {
+                const idx1 = i % 3;
+                const idx2 = i % 9;
+                result.push((nivel1[idx1] ^ nivel2[idx2]) % 8);
+            }
+            
+            return result.slice(0, 27);
+        }
+
+        // Update Stats
+        async function updateStats() {
+            try {
+                // Mock stats for now - in production would fetch from API
+                document.getElementById('stat-queries').textContent = queryCount;
+                document.getElementById('stat-universes').textContent = '2';
+                document.getElementById('stat-archetypes').textContent = '4';
+                document.getElementById('stat-coherence').textContent = '0.89';
+            } catch (error) {
+                console.error('Failed to update stats:', error);
+            }
+        }
+
+        // Load KB
+        async function loadKnowledgeBase() {
+            const container = document.getElementById('kb-list');
+            
+            // Mock KB data - in production would fetch from API
+            const mockKB = [
+                { space: 'default', pattern: '[1, 0, 1]' },
+                { space: 'default', pattern: '[0, 1, 0]' },
+                { space: 'genesis_basic', pattern: '[1, 1, 0]' },
+                { space: 'genesis_basic', pattern: '[0, 0, 1]' }
+            ];
+
+            if (mockKB.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+                        No patterns learned yet. Start by learning some patterns!
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = mockKB.map(item => `
+                <div class="kb-item">
+                    <div class="kb-space">📦 ${item.space}</div>
+                    <div class="kb-pattern">${item.pattern}</div>
+                </div>
+            `).join('');
+        }
+
+        // Logging
+        function log(message, type = 'info') {
+            const container = document.getElementById('log-container');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>

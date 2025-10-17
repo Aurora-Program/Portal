@@ -1,0 +1,146 @@
+{
+  "version": "1.0.0-fractal",
+  "fecha": "2025-10-16",
+  "tipo": "benchmark_fractal_aurora",
+  "paradigma": "NO baseline, solo coherencia interna",
+  "metricas": [
+    {
+      "metrica": "autosimilitud_fractal",
+      "score": 0.3333333333333333,
+      "detalle": {
+        "sim_1_2": 0.0,
+        "sim_1_3": 0.0,
+        "sim_2_3": 1.0,
+        "distribucion_nivel_1": {
+          "0": 0.0,
+          "1": 0.1111111111111111,
+          "2": 0.1111111111111111,
+          "3": 0.0,
+          "4": 0.3333333333333333,
+          "5": 0.1111111111111111,
+          "6": 0.1111111111111111,
+          "7": 0.2222222222222222
+        },
+        "distribucion_nivel_2": {
+          "0": 1.0,
+          "1": 0.0,
+          "2": 0.0,
+          "3": 0.0,
+          "4": 0.0,
+          "5": 0.0,
+          "6": 0.0,
+          "7": 0.0
+        },
+        "distribucion_nivel_3": {
+          "0": 1.0,
+          "1": 0.0,
+          "2": 0.0,
+          "3": 0.0,
+          "4": 0.0,
+          "5": 0.0,
+          "6": 0.0,
+          "7": 0.0
+        }
+      },
+      "interpretacion": "❌ No fractal (baja autosimilitud)"
+    },
+    {
+      "metrica": "emergencia_generativa",
+      "score": 0.5477886212993616,
+      "detalle": {
+        "score_promedio": 0.5477886212993616,
+        "score_std": 0.018067440908581464,
+        "novedad_promedio": 43.51885223388672,
+        "varianza_emergencias": 35.25958251953125,
+        "num_sintesis": 16
+      },
+      "interpretacion": "✅ Emergencia generativa activa"
+    },
+    {
+      "metrica": "no_conmutatividad",
+      "score": 30.59886360168457,
+      "detalle": {
+        "distancia_promedio": 30.59886360168457,
+        "distancia_std": 3.302959680557251,
+        "par_mas_diferente": {
+          "orden_1": "ABC",
+          "orden_2": "BCA",
+          "distancia": 35.88871765136719
+        },
+        "todas_distancias": [
+          {
+            "par": "ABC-ACB",
+            "distancia": 28.07133674621582
+          },
+          {
+            "par": "ABC-BAC",
+            "distancia": 33.763885498046875
+          },
+          {
+            "par": "ABC-BCA",
+            "distancia": 35.88871765136719
+          },
+          {
+            "par": "ABC-CAB",
+            "distancia": 32.68027114868164
+          },
+          {
+            "par": "ABC-CBA",
+            "distancia": 35.49647903442383
+          },
+          {
+            "par": "ACB-BAC",
+            "distancia": 30.5941162109375
+          },
+          {
+            "par": "ACB-BCA",
+            "distancia": 27.055498123168945
+          },
+          {
+            "par": "ACB-CAB",
+            "distancia": 24.979991912841797
+          },
+          {
+            "par": "ACB-CBA",
+            "distancia": 29.257476806640625
+          },
+          {
+            "par": "BAC-BCA",
+            "distancia": 33.0454216003418
+          }
+        ]
+      },
+      "interpretacion": "✅ Fuertemente no conmutativo"
+    },
+    {
+      "metrica": "reconstruccion_jerarquica",
+      "score": 1.0,
+      "detalle": {
+        "nivel_2_similitud": 1.0,
+        "nivel_3_similitud": 1.0,
+        "num_comparaciones_nivel_2": 180,
+        "num_comparaciones_nivel_3": 540
+      },
+      "interpretacion": "✅ Reconstrucción perfecta (información preservada)"
+    },
+    {
+      "metrica": "podado_inteligente",
+      "score": NaN,
+      "detalle": {
+        "entropias_por_nivel": {
+          "0": 2.280601667916671,
+          "2": 2.280601667916671,
+          "4": 2.280601667916671,
+          "6": 2.280601667916671
+        },
+        "correlacion_nivel_entropia": NaN
+      },
+      "interpretacion": "❌ Podado sin patrón (entropía no crece)"
+    }
+  ],
+  "resumen": {
+    "score_global": NaN,
+    "veredicto": "❌ SISTEMA NO FRACTAL",
+    "mensaje": "La estructura no exhibe coherencia fractal."
+  }
+}

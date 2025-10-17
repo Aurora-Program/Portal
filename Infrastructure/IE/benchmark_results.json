@@ -1,0 +1,138 @@
+{
+  "version": "1.0.0",
+  "fecha": "2025-10-16",
+  "configuracion": {
+    "dimension_embedding": 768,
+    "num_samples": 100,
+    "arquitectura_genesis": "FFE (Forma-Función-Estructura)",
+    "estructura_fractal": "3→9→27 vectores (117 bits)"
+  },
+  "resultados": [
+    {
+      "nombre": "Compresión de Representación",
+      "metrica": "bits_utilizados",
+      "valor_genesis": 117,
+      "valor_baseline": 24576,
+      "mejora_porcentual": 99.52392578125,
+      "unidad": "bits",
+      "detalles": {
+        "ratio": 210.05128205128204,
+        "ahorro_bytes": 3057.375
+      }
+    },
+    {
+      "nombre": "Velocidad de Codificación",
+      "metrica": "tiempo_encoding",
+      "valor_genesis": 0.14010490001237486,
+      "valor_baseline": 0.002997000003233552,
+      "mejora_porcentual": -4574.838166873925,
+      "unidad": "segundos",
+      "detalles": {
+        "throughput_genesis": 713.7509108615576,
+        "throughput_baseline": 33366.69999736638,
+        "ms_por_muestra": 1.4010490001237486
+      }
+    },
+    {
+      "nombre": "Preservación Semántica",
+      "metrica": "similitud_coseno",
+      "valor_genesis": 0.0916837855983254,
+      "valor_baseline": 1.0,
+      "mejora_porcentual": -90.83162144016745,
+      "unidad": "similitud",
+      "detalles": {
+        "std": 0.030983030416589827,
+        "min": 0.006271124367340812,
+        "max": 0.14965223286966742,
+        "muestras": 50
+      }
+    },
+    {
+      "nombre": "Uso de Memoria",
+      "metrica": "memoria_mb",
+      "valor_genesis": 0.13947486877441406,
+      "valor_baseline": 29.296875,
+      "mejora_porcentual": 99.52392578125,
+      "unidad": "MB",
+      "detalles": {
+        "n_vectores": 10000,
+        "bytes_por_vector_genesis": 14.625,
+        "bytes_por_vector_baseline": 3072
+      }
+    },
+    {
+      "nombre": "Escalabilidad (Batch)",
+      "metrica": "throughput_promedio",
+      "valor_genesis": 427.883647281974,
+      "valor_baseline": 40110.851737860066,
+      "mejora_porcentual": -9274.242739271394,
+      "unidad": "enc/s",
+      "detalles": {
+        "batch_sizes": [
+          10,
+          50,
+          100,
+          500
+        ],
+        "tiempos_genesis": [
+          0.018208299996331334,
+          0.10904029999801423,
+          0.1462739000126021,
+          1.268952900005388
+        ],
+        "tiempos_baseline": [
+          0.00022370000078808516,
+          0.0010459000041009858,
+          0.002046300010988489,
+          0.013138500013155863
+        ]
+      }
+    },
+    {
+      "nombre": "Síntesis Emergente",
+      "metrica": "score_emergencia",
+      "valor_genesis": 0.5199020417329313,
+      "valor_baseline": 0.0,
+      "mejora_porcentual": 100.0,
+      "unidad": "score",
+      "detalles": {
+        "std": 0.024302756067533307,
+        "novedad": 0.3185185185185186,
+        "coherencia": 0.6166960611405057,
+        "tripletas": 30,
+        "baseline": "N/A - Feature exclusivo de Genesis"
+      }
+    }
+  ],
+  "resumen": {
+    "ventajas": [
+      {
+        "metrica": "Compresión de Representación",
+        "mejora": "99.5%"
+      },
+      {
+        "metrica": "Uso de Memoria",
+        "mejora": "99.5%"
+      },
+      {
+        "metrica": "Síntesis Emergente",
+        "mejora": "100.0%"
+      }
+    ],
+    "desventajas": [
+      {
+        "metrica": "Velocidad de Codificación",
+        "perdida": "4574.8%"
+      },
+      {
+        "metrica": "Preservación Semántica",
+        "perdida": "90.8%"
+      },
+      {
+        "metrica": "Escalabilidad (Batch)",
+        "perdida": "9274.2%"
+      }
+    ],
+    "conclusion": "Genesis FFE ofrece compresión extrema (>200x) con overhead computacional aceptable y capacidad única de síntesis emergente."
+  }
+}

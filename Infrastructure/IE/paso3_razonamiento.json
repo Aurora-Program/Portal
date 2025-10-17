@@ -1,0 +1,192 @@
+{
+  "tarea_1_puentes": [
+    {
+      "A": "fonetico",
+      "B": null,
+      "C": "teorico"
+    },
+    {
+      "A": "forma",
+      "B": null,
+      "C": "estructura"
+    },
+    {
+      "A": "recursion",
+      "B": null,
+      "C": "emergencia"
+    },
+    {
+      "A": "primero",
+      "B": null,
+      "C": "tercero"
+    }
+  ],
+  "tarea_2_arquetipos": [
+    {
+      "palabra": "concepto",
+      "arquetipo": "ARQ_0003",
+      "es_nuevo": true,
+      "frecuencia": 4,
+      "vecinos": [
+        "emergencia",
+        "novedad",
+        "estructura"
+      ]
+    },
+    {
+      "palabra": "patron",
+      "arquetipo": "ARQ_0004",
+      "es_nuevo": true,
+      "frecuencia": 2,
+      "vecinos": [
+        "transcender"
+      ]
+    },
+    {
+      "palabra": "crear",
+      "arquetipo": "ARQ_0004",
+      "es_nuevo": true,
+      "frecuencia": 3,
+      "vecinos": [
+        "transcender"
+      ]
+    },
+    {
+      "palabra": "dimensión",
+      "arquetipo": "ARQ_0005",
+      "es_nuevo": true,
+      "frecuencia": 1,
+      "vecinos": []
+    }
+  ],
+  "tarea_3_sintesis": [
+    {
+      "triada": [
+        "recursion",
+        "nivel",
+        "jerarquia"
+      ],
+      "score_emergencia": 0.49970863205449834,
+      "novedad": 0.30158730158730157,
+      "coherencia": 0.5955320399764844,
+      "arquetipo_emergente": "ARQ_0004",
+      "dimensiones": {
+        "forma": 3.3333333333333335,
+        "funcion": 4.333333333333333,
+        "estructura": 4.666666666666667
+      }
+    },
+    {
+      "triada": [
+        "forma",
+        "funcion",
+        "estructura"
+      ],
+      "score_emergencia": 0.5029164273390389,
+      "novedad": 0.3333333333333333,
+      "coherencia": 0.5261610817166373,
+      "arquetipo_emergente": "ARQ_0002",
+      "dimensiones": {
+        "forma": 3.6666666666666665,
+        "funcion": 2.3333333333333335,
+        "estructura": 2.6666666666666665
+      }
+    },
+    {
+      "triada": [
+        "emergencia",
+        "sintesis",
+        "transcender"
+      ],
+      "score_emergencia": 0.5346631946189653,
+      "novedad": 0.31746031746031744,
+      "coherencia": 0.6872427983539096,
+      "arquetipo_emergente": "ARQ_0001",
+      "dimensiones": {
+        "forma": 1.3333333333333333,
+        "funcion": 3.0,
+        "estructura": 3.3333333333333335
+      }
+    },
+    {
+      "triada": [
+        "primero",
+        "segundo",
+        "tercero"
+      ],
+      "score_emergencia": 0.4887000522617524,
+      "novedad": 0.25396825396825395,
+      "coherencia": 0.6143445032333921,
+      "arquetipo_emergente": "ARQ_0003",
+      "dimensiones": {
+        "forma": 3.6666666666666665,
+        "funcion": 5.0,
+        "estructura": 3.6666666666666665
+      }
+    }
+  ],
+  "tarea_4_contradicciones": [
+    {
+      "palabras": [
+        "fonetico",
+        "teorico"
+      ],
+      "arquetipos": [
+        "ARQ_0001",
+        "ARQ_0001"
+      ],
+      "similitud": 1.0,
+      "es_contradiccion": false,
+      "fuerza_relator": 0.0,
+      "tipo_relacion": "COMPATIBLE"
+    },
+    {
+      "palabras": [
+        "forma",
+        "estructura"
+      ],
+      "arquetipos": [
+        "ARQ_0002",
+        "ARQ_0003"
+      ],
+      "similitud": 0.6825396825396826,
+      "es_contradiccion": false,
+      "fuerza_relator": 0.5167373149188459,
+      "tipo_relacion": "COMPATIBLE"
+    },
+    {
+      "palabras": [
+        "emergencia",
+        "orden"
+      ],
+      "arquetipos": [
+        "ARQ_0003",
+        "ARQ_0001"
+      ],
+      "similitud": 0.7142857142857143,
+      "es_contradiccion": false,
+      "fuerza_relator": 0.5606532569687068,
+      "tipo_relacion": "COMPATIBLE"
+    },
+    {
+      "palabras": [
+        "recursion",
+        "novedad"
+      ],
+      "arquetipos": [
+        "ARQ_0001",
+        "ARQ_0003"
+      ],
+      "similitud": 0.7142857142857143,
+      "es_contradiccion": false,
+      "fuerza_relator": 0.5313039406870051,
+      "tipo_relacion": "COMPATIBLE"
+    }
+  ],
+  "metricas": {
+    "puentes_exitosos": 0,
+    "arquetipos_predichos": 4,
+    "sintesis_exitosas": 4,
+    "contradicciones_detectadas": 0
+  }
+}

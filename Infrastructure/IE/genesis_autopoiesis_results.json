@@ -1,0 +1,56 @@
+{
+  "version": "1.0.0-autopoiesis",
+  "fecha": "2025-10-17 01:14:41",
+  "fase_1": {
+    "vocabulario_size": 20
+  },
+  "fase_2": {
+    "frases_size": 12
+  },
+  "fase_3": {
+    "emergencias_size": 4,
+    "score_promedio": 0.49964535184497383
+  },
+  "fase_4": {
+    "num_arquetipos": 4
+  },
+  "fase_5": {
+    "num_transiciones": 1,
+    "dinamica_detectada": true
+  },
+  "fase_6": {
+    "num_nodos": 9,
+    "num_conexiones": 166
+  },
+  "fase_7": {
+    "traducciones": [
+      {
+        "original": "El sistema aprende de su propia coherencia",
+        "arquetipos": [
+          "semantico",
+          "estructura",
+          "orden"
+        ],
+        "emergencia_score": 0.5061683945811811
+      },
+      {
+        "original": "La recursion genera autosimilitud perfecta",
+        "arquetipos": [
+          "estructura",
+          "recursion",
+          "jerarquia"
+        ],
+        "emergencia_score": 0.4905975528846791
+      },
+      {
+        "original": "Tres vectores forman un tensor completo",
+        "arquetipos": [
+          "forma",
+          "semantico",
+          "segundo"
+        ],
+        "emergencia_score": 0.49727763878281445
+      }
+    ]
+  }
+}

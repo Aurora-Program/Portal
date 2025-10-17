@@ -1,0 +1,19 @@
+﻿python : Traceback (most recent call last):
+At line:1 char:59
++ ... ing]::UTF8; python genesis_autopoiesis.py --output test.json 2>&1 | O ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\p_m_a\Aurora\Portal\Portal\Infrastructure\IE\genesis_autopoiesis.py", line 628, in <module>
+    main()
+  File "C:\Users\p_m_a\Aurora\Portal\Portal\Infrastructure\IE\genesis_autopoiesis.py", line 584, in main
+    genesis = GenesisAutopoiesis()
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\p_m_a\Aurora\Portal\Portal\Infrastructure\IE\genesis_autopoiesis.py", line 83, in __init__
+    print("\U0001f30c Iniciando Genesis Autopoiesis")
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\Lib\encodings\cp1252.py", line 19, in 
+encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f30c' in position 0: character maps to <undefined>

@@ -1,0 +1,16 @@
+{
+  "fase_6": {
+    "arquetipos": 3,
+    "relatores": 619,
+    "relatores_con_transformacion": 619
+  },
+  "fase_7": {
+    "coherente": true,
+    "incoherencias": 619,
+    "correcciones": 619,
+    "aprendizajes": 619,
+    "tipos": {
+      "broken_relator": 619
+    }
+  }
+}

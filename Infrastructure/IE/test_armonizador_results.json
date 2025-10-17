@@ -1,0 +1,36 @@
+{
+  "tarea_1_deteccion": {
+    "incoherencias_detectadas": 1,
+    "tipos": {
+      "weak_archetype": 1
+    }
+  },
+  "tarea_2_correspondencia": {
+    "primera_valida": false,
+    "misma_valida": false,
+    "diferente_invalida": true
+  },
+  "tarea_3_autocorreccion": {
+    "exitosa": true,
+    "coherencia": 0.8301587301587302,
+    "pasos_recursivos": 0
+  },
+  "tarea_4_aprendizaje": {
+    "aprendizajes": 1
+  },
+  "tarea_5_armonizacion": {
+    "coherente": true,
+    "incoherencias": 0,
+    "correcciones": 0,
+    "aprendizajes": 0
+  },
+  "tarea_6_estadisticas": {
+    "total_incoherencias": 0,
+    "total_aprendizajes": 1,
+    "confianzas_arquetipos": 1,
+    "confianzas_relatores": 0,
+    "confianza_promedio_arquetipos": 0.9714285714285714,
+    "confianza_promedio_relatores": 1.0,
+    "correspondencias_espacios": 2
+  }
+}

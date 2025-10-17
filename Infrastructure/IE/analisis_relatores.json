@@ -1,0 +1,93 @@
+{
+  "total_relatores": 12,
+  "densidad_red": 2.625,
+  "tipos_transformacion": {
+    "ESTRUCTURA_SHIFT": 8,
+    "ANALOGIA": 2,
+    "FORMA_SHIFT": 8,
+    "FUNCION_SHIFT": 10,
+    "CAUSALIDAD": 6,
+    "OPOSICION": 4
+  },
+  "fuerza_promedio": 0.5580282666459055,
+  "fuerza_std": 0.027113612185506484,
+  "clustering_promedio": 1.0,
+  "top_hubs": {
+    "generadores": [
+      {
+        "id": "ARQ_0001",
+        "grado": 3
+      },
+      {
+        "id": "ARQ_0002",
+        "grado": 3
+      },
+      {
+        "id": "ARQ_0003",
+        "grado": 3
+      }
+    ],
+    "receptores": [
+      {
+        "id": "ARQ_0002",
+        "grado": 3
+      },
+      {
+        "id": "ARQ_0003",
+        "grado": 3
+      },
+      {
+        "id": "ARQ_0004",
+        "grado": 3
+      }
+    ]
+  },
+  "top_caminos": [
+    {
+      "camino": "ARQ_0004 → ARQ_0001 → ARQ_0002",
+      "fuerza": 0.368306247917771
+    },
+    {
+      "camino": "ARQ_0002 → ARQ_0004 → ARQ_0001",
+      "fuerza": 0.3553289804738083
+    },
+    {
+      "camino": "ARQ_0001 → ARQ_0002 → ARQ_0004",
+      "fuerza": 0.33910419661730706
+    },
+    {
+      "camino": "ARQ_0001 → ARQ_0004 → ARQ_0001",
+      "fuerza": 0.33432868963808576
+    },
+    {
+      "camino": "ARQ_0004 → ARQ_0001 → ARQ_0004",
+      "fuerza": 0.33432868963808576
+    },
+    {
+      "camino": "ARQ_0003 → ARQ_0004 → ARQ_0001",
+      "fuerza": 0.33317925821870825
+    },
+    {
+      "camino": "ARQ_0003 → ARQ_0001 → ARQ_0002",
+      "fuerza": 0.3323916917314507
+    },
+    {
+      "camino": "ARQ_0001 → ARQ_0002 → ARQ_0001",
+      "fuerza": 0.33012255995852485
+    },
+    {
+      "camino": "ARQ_0002 → ARQ_0001 → ARQ_0002",
+      "fuerza": 0.33012255995852485
+    },
+    {
+      "camino": "ARQ_0004 → ARQ_0001 → ARQ_0003",
+      "fuerza": 0.330062597317502
+    }
+  ],
+  "conectividad_total": {
+    "ARQ_0004": 6,
+    "ARQ_0003": 6,
+    "ARQ_0001": 6,
+    "ARQ_0002": 6
+  }
+}
